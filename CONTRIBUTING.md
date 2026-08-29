@@ -1,5 +1,18 @@
 # Contributing
 
+## Workflow
+
+**No direct pushes to `main`** — this is enforced by branch protection (including for repo admins), not just a convention. All changes go through a pull request:
+
+```bash
+git checkout -b your-branch-name
+# make your changes
+git push -u origin your-branch-name
+gh pr create   # or open the PR on github.com
+```
+
+CI (`test (3.10)`, `test (3.12)`) must pass before a PR can merge — that's also enforced, not optional. Once it's green, merge the PR (squash or regular merge, your call) rather than merging locally and pushing `main` directly.
+
 ## Setup
 
 ```bash
@@ -31,7 +44,7 @@ All 74 tests should pass before you open a PR. CI runs this automatically on eve
 
 ## Project structure & where to contribute
 
-All library code lives under `src/fastdocparse/` (installed as the `fastdocparse` package); `test_*.py` files at the repo root import from it as `from fastdocparse import ...` / `from fastdocparse.parser import ...`, exactly as an external user would.
+All library code lives under `src/fastdocparse/` (installed as the `fastdocparse` package); `test_*.py` files under `tests/` import from it as `from fastdocparse import ...` / `from fastdocparse.parser import ...`, exactly as an external user would.
 
 For the module map, the data-flow pipeline, the dependency graph between modules, and a diagram of where common contributions plug in, see **[docs/architecture.md](docs/architecture.md)** — kept as one diagram-based doc rather than duplicated here, so it doesn't drift out of sync with a second copy.
 
