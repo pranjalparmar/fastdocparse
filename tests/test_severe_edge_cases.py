@@ -41,8 +41,7 @@ def test_catastrophic_backtracking_pattern_does_not_hang():
         "print(f'ELAPSED={time.time() - start}')\n"
     )
     # Generous outer bound — this only needs to catch a genuine hang, not time the guard.
-    result = subprocess.run([sys.executable, "-c", code], timeout=30, capture_output=True, text=True)
-    assert result.returncode == 0, result.stderr
+    result = subprocess.run([sys.executable, "-c", code], timeout=30, capture_output=True, text=True, check=True)
 
     elapsed_line = next(line for line in result.stdout.splitlines() if line.startswith("ELAPSED="))
     elapsed = float(elapsed_line.split("=")[1])
