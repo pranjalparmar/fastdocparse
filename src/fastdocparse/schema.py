@@ -55,7 +55,7 @@ class Schema(BaseModel):
                 if not isinstance(ex, tuple) or len(ex) != 2:
                     raise ValueError("Each example must be a tuple of (document_snippet, expected_json)")
                 if not isinstance(ex[0], str) or not isinstance(ex[1], dict):
-                    raise ValueError("Each example must be a tuple of (str, dict)")
+                    raise TypeError("Each example must be a tuple of (str, dict)")
         return v
 
     @classmethod
