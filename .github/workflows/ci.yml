@@ -26,3 +26,45 @@ jobs:
 
       - name: Run tests
         run: pytest -v
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build tools
+        run: python -m pip install --upgrade pip build twine
+
+      - name: Build sdist and wheel
+        run: python -m build
+
+      - name: Validate package metadata
+        run: twine check dist/*
+
+  lint:
+    runs-on: ubuntu-latest
+    continue-on-error: true  # advisory only — pre-existing findings not yet cleaned up
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install lint tools
+        run: python -m pip install --upgrade pip ruff mypy
+
+      - name: Install package (for mypy import resolution)
+        run: pip install -e .
+
+      - name: Ruff
+        run: ruff check src/ tests/
+
+      - name: Mypy
+        run: mypy src/fastdocparse --ignore-missing-imports
