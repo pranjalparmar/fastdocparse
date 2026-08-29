@@ -1,7 +1,7 @@
 # Dynamic Document Extractor — Project Specification
 
-**Status:** Planning → Phase 1 not yet started
-**Base name (working):** TBD — see [Naming](#naming) (`fastparse` is taken on PyPI; `zerovlm`, `docextract`, `fastdocparse`, `doc-fastparse` are free)
+**Status:** Published on PyPI as `fastdocparse` — Phases 1–5 complete, Phase 6 (packaging/publish) done; see [README.md](README.md) for current state. The rest of this document is preserved as the original planning record; sections below describing earlier phases as "not started" are historical, not current status.
+**Base name:** `fastdocparse` — see [Naming](#naming) for how this was decided (`docextract`, the original top pick, was blocked by PyPI's project-name-similarity rule against the pre-existing `doc-extract`)
 **Origin:** Generalization of `invoice-details-extractor` (github.com/pranjalparmar/invoice-details-extractor) into a schema-driven, model-agnostic document extraction library.
 
 ---
@@ -221,7 +221,7 @@ Core modules (extending the existing repo structure):
 | `fastdocparse` | ✅ Available |
 | `doc-fastparse` | ✅ Available |
 
-Decision: not yet finalized — revisit before Phase 6 packaging (names can be re-checked at that point in case availability changed).
+Decision: `docextract` was the original pick and was fully built under that name (import path, CLI command, GitHub repo) — but PyPI rejected the upload with "the name 'docextract' is too similar to an existing project" (it collides with the pre-existing `doc-extract`; PyPI treats `-`/`_`/case as equivalent for uniqueness, which a plain exact-name availability check doesn't catch). Everything was renamed to `fastdocparse` — package, import name, CLI command, and the GitHub repo itself — rather than keeping a PyPI-name/import-name mismatch, since consistency was worth more than avoiding the rename churn.
 
 ---
 
