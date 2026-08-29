@@ -56,7 +56,10 @@ def extract_text_from_image_ocr(image_bytes: bytes, structured_mode: bool = Fals
         return ""
 
     try:
-        img = Image.open(io.BytesIO(image_bytes))
+        # Annotated as the base Image.Image (not the narrower ImageFile.ImageFile that
+        # Image.open() returns) since .convert()/.resize() below return the base type —
+        # both are handled identically by everything this code does with `img`.
+        img: Image.Image = Image.open(io.BytesIO(image_bytes))
         if img.mode != "RGB":
             img = img.convert("RGB")
 

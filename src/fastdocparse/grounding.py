@@ -84,6 +84,9 @@ class Issue:
     kind: str = "cross_check"  # "cross_check" | "missing_required" | "invalid_format"
 
 
+CrossCheckRule = Callable[[Dict[str, Any]], Optional[List[Issue]]]
+
+
 _NUMBER_RE = re.compile(r'-?\d[\d,]*\.?\d*')
 
 
@@ -242,7 +245,7 @@ def validate_field_constraints(schema: Schema, extracted: Dict[str, Any]) -> Lis
     return issues
 
 
-def numeric_sum_rule(list_field: str, total_field: str, item_key: str = "amount", tolerance: float = 0.01) -> Callable[[Dict[str, Any]], Optional[List[Issue]]]:
+def numeric_sum_rule(list_field: str, total_field: str, item_key: str = "amount", tolerance: float = 0.01) -> CrossCheckRule:
     """Build a rule flagging total_field when it doesn't match the sum of item_key across list_field."""
 
     def _rule(extracted: Dict[str, Any]) -> Optional[List[Issue]]:
@@ -265,7 +268,7 @@ def numeric_sum_rule(list_field: str, total_field: str, item_key: str = "amount"
     return _rule
 
 
-def date_parseable_rule(field_name: str, formats: Optional[List[str]] = None) -> Callable[[Dict[str, Any]], Optional[List[Issue]]]:
+def date_parseable_rule(field_name: str, formats: Optional[List[str]] = None) -> CrossCheckRule:
     """Build a rule flagging field_name when its value doesn't parse as a date in any given format."""
     from datetime import datetime
 
@@ -286,15 +289,15 @@ def date_parseable_rule(field_name: str, formats: Optional[List[str]] = None) ->
     return _rule
 
 
-def cross_check(schema: Schema, extracted: Dict[str, Any], rules: List[Callable[[Dict[str, Any]], Optional[List[Issue]]]]) -> List[Issue]:
+def cross_check(schema: Schema, extracted: Dict[str, Any], rules: Optional[List[CrossCheckRule]]) -> List[Issue]:
     """
     Run custom cross-check rules on the extracted data.
     Each rule is a callable taking the extracted dict and returning a list of Issues (or None).
     """
-    issues = []
+    issues: List[Issue] = []
     if not rules:
         return issues
-        
+
     for rule in rules:
         try:
             result = rule(extracted)

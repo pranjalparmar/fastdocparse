@@ -10,6 +10,7 @@ from openai import (
     OpenAI,
     RateLimitError,
 )
+from openai.types.chat import ChatCompletionMessageParam
 
 
 class LLMClientError(Exception):
@@ -38,7 +39,7 @@ class LLMClient:
             timeout=60.0
         )
 
-    def _call(self, messages: List[dict], temperature: float, max_tokens: int, retries: int = 2, backoff: float = 1.0) -> str:
+    def _call(self, messages: List[ChatCompletionMessageParam], temperature: float, max_tokens: int, retries: int = 2, backoff: float = 1.0) -> str:
         """Run a chat completion, retrying transient failures and raising LLMClientError on exhaustion."""
         last_error: Optional[Exception] = None
         for attempt in range(retries + 1):

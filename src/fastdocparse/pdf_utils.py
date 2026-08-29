@@ -50,8 +50,10 @@ def pdf_to_page_images(pdf_bytes: bytes, max_pages: int = 3, dpi: int = PDF_REND
             page = doc[i]
             pix = page.get_pixmap(matrix=matrix, alpha=False)
 
-            # Convert to PIL Image for resizing
-            img = Image.open(io.BytesIO(pix.tobytes("png")))
+            # Convert to PIL Image for resizing. Annotated as the base Image.Image since
+            # .resize() below returns that, not the narrower ImageFile.ImageFile that
+            # Image.open() does — both work identically for everything used here.
+            img: Image.Image = Image.open(io.BytesIO(pix.tobytes("png")))
 
             # Resize to max_dim for better OCR fidelity
             if img.width > max_dim or img.height > max_dim:
@@ -77,7 +79,9 @@ def image_bytes_to_page_image(img_bytes: bytes) -> PageImage:
 
     The image is loaded, resized for faster processing, and re-encoded as PNG.
     """
-    img = Image.open(io.BytesIO(img_bytes))
+    # Annotated as the base Image.Image since .convert()/.resize() below return that,
+    # not the narrower ImageFile.ImageFile that Image.open() does.
+    img: Image.Image = Image.open(io.BytesIO(img_bytes))
     # Convert to RGB if necessary (for JPEGs with transparency, etc.)
     if img.mode != "RGB":
         img = img.convert("RGB")

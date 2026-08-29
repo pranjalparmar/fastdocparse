@@ -11,7 +11,7 @@ import pymupdf
 
 from .cache import Cache, make_cache_key
 from .config import ExtractionConfig
-from .grounding import Issue, _is_present, check_substring, cross_check, validate_field_constraints
+from .grounding import CrossCheckRule, Issue, _is_present, check_substring, cross_check, validate_field_constraints
 from .json_repair import parse_json_from_llm as _parse_json_from_llm
 from .llm_client import LLMClient
 from .ocr_engine import extract_text_from_image_ocr
@@ -164,7 +164,7 @@ class DocumentParser:
         document_bytes: bytes,
         schema: Schema,
         is_image: bool = False,
-        rules: Optional[list] = None,
+        rules: Optional[List[CrossCheckRule]] = None,
         kind: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Extract information from a document matching the schema.
@@ -177,13 +177,17 @@ class DocumentParser:
         handler = self._resolve_handler(resolved_kind)
         logger.info("Extracting schema=%r via kind=%r (structured_mode=%s)", schema.name, resolved_kind, structured_mode)
 
+        # Captured once into a local so type checkers can narrow it past None below —
+        # self.cache itself can't be narrowed across statements (it's an attribute,
+        # not a local), even though it never changes during a single extract() call.
+        cache = self.cache
         cache_key = None
-        if self.cache is not None and not rules:
+        if cache is not None and not rules:
             # Keyed on the handler itself, not just the kind name — two DocumentParser
             # instances can register different handlers under the same kind, and a
             # shared cache must not conflate them.
             cache_key = make_cache_key(document_bytes, schema, resolved_kind, self.config, handler)
-            cached = self.cache.get(cache_key)
+            cached = cache.get(cache_key)
             if cached is not None:
                 logger.info("Cache hit for schema=%r.", schema.name)
                 return cached
@@ -202,8 +206,8 @@ class DocumentParser:
 
         result = self._build_result(schema, merged_data, doc_text, rules, is_truncated, truncation_reason)
 
-        if cache_key is not None:
-            self.cache.set(cache_key, result)
+        if cache_key is not None and cache is not None:
+            cache.set(cache_key, result)
 
         return result
 
@@ -212,7 +216,7 @@ class DocumentParser:
         document_bytes: bytes,
         schema: Schema,
         is_image: bool = False,
-        rules: Optional[list] = None,
+        rules: Optional[List[CrossCheckRule]] = None,
         kind: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Async wrapper around extract(). The work itself is still synchronous (OCR,
