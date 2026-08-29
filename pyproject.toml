@@ -5,6 +5,17 @@ description = "Extract structured data from semi-structured documents using any 
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.9,<3.13"  # capped by rapidocr-onnxruntime's own upper bound (checked live against PyPI)
+keywords = [
+    "document-extraction",
+    "llm",
+    "pdf",
+    "ocr",
+    "invoice-extraction",
+    "structured-data",
+    "openai",
+    "ollama",
+    "grounding",
+]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
@@ -28,6 +39,12 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest"]
+
+[project.urls]
+Homepage = "https://github.com/pranjalparmar/fastdocparse"
+Repository = "https://github.com/pranjalparmar/fastdocparse"
+Issues = "https://github.com/pranjalparmar/fastdocparse/issues"
+Documentation = "https://github.com/pranjalparmar/fastdocparse/tree/main/docs"
 
 [project.scripts]
 fastdocparse = "fastdocparse.cli:app"
