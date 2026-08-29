@@ -20,6 +20,15 @@ No extra LLM call for any of this — it's deterministic, string/rule-based vali
 
 **Where it fits:** semi-structured documents with recurring fields (invoices, bills, tax forms, resumes, statements), and prose documents where *proving* a value came from the source matters (contracts, legal clauses, insurance claims). It is not a vision-LLM pipeline — it works from extracted text (digital PDF text layer, or local OCR for scans/images), which is what keeps it fast, cheap, and usable with small local models. Messy handwritten forms or complex multi-column layouts are a known weaker spot (see [document-extractor-spec.md](document-extractor-spec.md)).
 
+## How this compares
+
+| Project | Approach | Where it beats fastdocparse | Where fastdocparse can beat it |
+|---|---|---|---|
+| **[Sparrow](https://github.com/katanaml/sparrow)** (katanaml) | Vision-LLM first (MLX/vLLM/Ollama/Mistral OCR), multi-service platform, API-first | Layout-aware (sees the page), mature, table templates for complex tables | No GPU required, single `pip install`, Pydantic-schema devex vs. raw JSON-string CLI args |
+| **[LangExtract](https://github.com/google/langextract)** (Google) | Text-first, source-grounding (character-offset mapping), few-shot examples required | Real grounding/traceability, brand trust | Purpose-built for documents (OCR routing) vs. text-in/text-out |
+
+**The honest edge:** *fast, cheap, local-model-friendly extraction for clean-to-moderate documents* — not "better than Sparrow at everything." This has not yet been validated with a real head-to-head benchmark ([tracking issue](https://github.com/pranjalparmar/fastdocparse/issues/19)) — treat it as a design goal, not a proven claim, until that lands.
+
 ## Two ways to use it
 
 | | Who it's for | How |
