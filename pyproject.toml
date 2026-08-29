@@ -5,6 +5,17 @@ description = "Extract structured data from semi-structured documents using any 
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.9,<3.13"  # capped by rapidocr-onnxruntime's own upper bound (checked live against PyPI)
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+    "Topic :: Text Processing :: Linguistic",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
 dependencies = [
     "pydantic>=2.0",
     "openai>=1.0",

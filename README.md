@@ -1,5 +1,9 @@
 # fastdocparse
 
+[![PyPI](https://img.shields.io/pypi/v/fastdocparse.svg)](https://pypi.org/project/fastdocparse/)
+[![CI](https://github.com/pranjalparmar/fastdocparse/actions/workflows/ci.yml/badge.svg)](https://github.com/pranjalparmar/fastdocparse/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Extract structured data from semi-structured documents — invoices, bills, tax forms, resumes, bank statements, shipment manifests — using any OpenAI-compatible LLM (OpenAI, Ollama, vLLM, Groq, etc.), with **per-field grounding and confidence**, not just raw extraction.
 
 ## Why this, not just another parser
