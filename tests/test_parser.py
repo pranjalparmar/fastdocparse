@@ -1,6 +1,5 @@
 """Tests for the generalized document extractor Phase 1 & 2."""
 
-import json
 import pytest
 from unittest.mock import MagicMock, patch
 
@@ -192,8 +191,8 @@ def test_tc2_5_no_extra_llm_calls():
     parser = DocumentParser(client=mock_client)
     
     with patch("fastdocparse.parser.extract_text_from_pdf", return_value="Total amount is 15.00 for this bill."):
-        res = parser.extract(b"dummy", schema)
-        
+        parser.extract(b"dummy", schema)
+
     mock_client.extract.assert_called_once()
 
 def test_tc3_1_schema_examples_compile():
