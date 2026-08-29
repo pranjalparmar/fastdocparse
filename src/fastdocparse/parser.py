@@ -164,7 +164,7 @@ class DocumentParser:
         document_bytes: bytes,
         schema: Schema,
         is_image: bool = False,
-        rules: list = None,
+        rules: Optional[list] = None,
         kind: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Extract information from a document matching the schema.
@@ -212,7 +212,7 @@ class DocumentParser:
         document_bytes: bytes,
         schema: Schema,
         is_image: bool = False,
-        rules: list = None,
+        rules: Optional[list] = None,
         kind: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Async wrapper around extract(). The work itself is still synchronous (OCR,

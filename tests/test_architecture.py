@@ -3,6 +3,7 @@ the public ingestion-registry extension point, and the deduplicated example sche
 """
 
 import asyncio
+import dataclasses
 import json
 from unittest.mock import MagicMock, patch
 
@@ -210,7 +211,7 @@ def test_in_memory_cache_get_refreshes_recency():
 
 def test_extraction_config_is_frozen():
     config = ExtractionConfig()
-    with pytest.raises(Exception):
+    with pytest.raises(dataclasses.FrozenInstanceError):
         config.max_pages = 999
 
 
