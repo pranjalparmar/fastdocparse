@@ -48,7 +48,6 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-    continue-on-error: true  # advisory only — pre-existing findings not yet cleaned up
     steps:
       - uses: actions/checkout@v4
 
@@ -63,8 +62,15 @@ jobs:
       - name: Install package (for mypy import resolution)
         run: pip install -e .
 
+      # Advisory only, at the step level — pre-existing findings not yet cleaned up.
+      # Job-level continue-on-error doesn't block merge either, but still shows the
+      # job as a red "failed" check, which misrepresents "advisory" as "broken."
+      # Step-level continue-on-error lets the job itself report success/green while
+      # still running and logging the findings for anyone who wants to see them.
       - name: Ruff
+        continue-on-error: true
         run: ruff check src/ tests/
 
       - name: Mypy
+        continue-on-error: true
         run: mypy src/fastdocparse --ignore-missing-imports
