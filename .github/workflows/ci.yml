@@ -62,15 +62,15 @@ jobs:
       - name: Install package (for mypy import resolution)
         run: pip install -e .
 
-      # Advisory only, at the step level — pre-existing findings not yet cleaned up.
-      # Job-level continue-on-error doesn't block merge either, but still shows the
-      # job as a red "failed" check, which misrepresents "advisory" as "broken."
-      # Step-level continue-on-error lets the job itself report success/green while
-      # still running and logging the findings for anyone who wants to see them.
+      # Advisory means "doesn't block merge" (this job isn't in required_status_checks),
+      # not "hide failures." No continue-on-error: if either tool finds something, the
+      # job genuinely reports red, so there's an honest signal to look at — it just
+      # can't stop a merge on its own. `if: always()` on Mypy means a Ruff failure
+      # doesn't skip it — both tools always run to completion, so one findings report
+      # shows everything instead of stopping at the first tool that complains.
       - name: Ruff
-        continue-on-error: true
         run: ruff check src/ tests/
 
       - name: Mypy
-        continue-on-error: true
+        if: always()
         run: mypy src/fastdocparse --ignore-missing-imports
