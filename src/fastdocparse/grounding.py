@@ -20,9 +20,7 @@ def _is_present(value: Any) -> bool:
     "grounded" either, since an empty string is a substring of anything)."""
     if value is None:
         return False
-    if isinstance(value, str) and not value.strip():
-        return False
-    return True
+    return not (isinstance(value, str) and not value.strip())
 
 
 class _PatternTimeout(Exception):
@@ -199,10 +197,7 @@ def check_substring(value: Any, source_text: str, numeric: bool = False, date: b
     val_clean = re.sub(r'\W+', '', val_str)
     source_clean = re.sub(r'\W+', '', source_lower)
     
-    if val_clean and val_clean in source_clean:
-        return True
-        
-    return False
+    return bool(val_clean and val_clean in source_clean)
 
 
 def validate_field_constraints(schema: Schema, extracted: Dict[str, Any]) -> List[Issue]:
