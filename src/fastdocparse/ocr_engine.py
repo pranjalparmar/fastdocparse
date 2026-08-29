@@ -7,6 +7,7 @@ import io
 import logging
 import threading
 from typing import List, Tuple
+
 from PIL import Image
 
 logger = logging.getLogger(__name__)

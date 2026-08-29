@@ -12,7 +12,11 @@ import pytest
 from fastdocparse.cache import InMemoryCache, make_cache_key
 from fastdocparse.config import ExtractionConfig
 from fastdocparse.example_schemas import INVOICE_SCHEMA
-from fastdocparse.parser import INGESTION_HANDLERS, DocumentParser, register_default_ingestion_handler
+from fastdocparse.parser import (
+    INGESTION_HANDLERS,
+    DocumentParser,
+    register_default_ingestion_handler,
+)
 from fastdocparse.schema import Field, Schema
 
 

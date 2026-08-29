@@ -2,7 +2,8 @@
 
 import json
 from pathlib import Path
-from typing import List, Optional, Tuple, Dict, Any, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
+
 from pydantic import BaseModel, field_validator
 
 

@@ -1,7 +1,8 @@
 """Tests for compiling a plain-English description into a Schema."""
 
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 
 from fastdocparse.llm_client import LLMClient
 from fastdocparse.schema_compiler import compile_schema_from_description

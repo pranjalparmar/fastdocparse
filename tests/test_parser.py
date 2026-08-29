@@ -1,13 +1,14 @@
 """Tests for the generalized document extractor Phase 1 & 2."""
 
-import pytest
 from unittest.mock import MagicMock, patch
 
-from fastdocparse.schema import Schema, Field
+import pytest
+
 from fastdocparse.example_schemas import INVOICE_SCHEMA
+from fastdocparse.grounding import Issue
 from fastdocparse.llm_client import LLMClient
 from fastdocparse.parser import DocumentParser, _parse_json_from_llm
-from fastdocparse.grounding import Issue
+from fastdocparse.schema import Field, Schema
 
 
 def test_tc1_1_invoice_schema_extraction():
@@ -275,7 +276,7 @@ def test_tc4_2_structured_mode_disabled():
 
 def test_tc4_3_ocr_structured_formatting():
     """TC4.3 - Verify OCR engine formats output with X coordinates in structured_mode."""
-    from fastdocparse.ocr_engine import extract_text_from_image_ocr, HAS_RAPID_OCR
+    from fastdocparse.ocr_engine import HAS_RAPID_OCR, extract_text_from_image_ocr
     if not HAS_RAPID_OCR:
         pytest.skip("RapidOCR not installed")
         

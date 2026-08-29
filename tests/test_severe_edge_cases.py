@@ -14,7 +14,7 @@ from fastdocparse.grounding import validate_field_constraints
 from fastdocparse.json_repair import parse_json_from_llm
 from fastdocparse.parser import DocumentParser, EmptyDocumentError
 from fastdocparse.pdf_utils import chunk_document_text
-from fastdocparse.schema import Schema, Field
+from fastdocparse.schema import Field, Schema
 
 
 def test_catastrophic_backtracking_pattern_does_not_hang():

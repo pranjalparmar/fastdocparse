@@ -10,9 +10,21 @@ OpenAI-compatible LLM, with per-field grounding and confidence.
 
 from .cache import Cache, InMemoryCache
 from .config import ExtractionConfig
-from .grounding import Issue, check_substring, cross_check, date_parseable_rule, numeric_sum_rule, validate_field_constraints
+from .grounding import (
+    Issue,
+    check_substring,
+    cross_check,
+    date_parseable_rule,
+    numeric_sum_rule,
+    validate_field_constraints,
+)
 from .llm_client import LLMClient, LLMClientError
-from .parser import DocumentParser, EmptyDocumentError, UnknownIngestionKindError, register_default_ingestion_handler
+from .parser import (
+    DocumentParser,
+    EmptyDocumentError,
+    UnknownIngestionKindError,
+    register_default_ingestion_handler,
+)
 from .result import ExtractionMeta, ExtractionResult, FieldResult
 from .schema import Field, Schema
 from .schema_compiler import compile_schema_from_description

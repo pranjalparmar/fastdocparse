@@ -4,9 +4,10 @@ import logging
 import re
 import signal
 import threading
-from datetime import datetime
-from typing import Any, Dict, List, Callable, Optional
 from dataclasses import dataclass
+from datetime import datetime
+from typing import Any, Callable, Dict, List, Optional
+
 from .schema import Schema
 
 logger = logging.getLogger(__name__)

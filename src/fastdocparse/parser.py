@@ -11,7 +11,14 @@ import pymupdf
 
 from .cache import Cache, make_cache_key
 from .config import ExtractionConfig
-from .grounding import CrossCheckRule, Issue, _is_present, check_substring, cross_check, validate_field_constraints
+from .grounding import (
+    CrossCheckRule,
+    Issue,
+    _is_present,
+    check_substring,
+    cross_check,
+    validate_field_constraints,
+)
 from .json_repair import parse_json_from_llm as _parse_json_from_llm
 from .llm_client import LLMClient
 from .ocr_engine import extract_text_from_image_ocr
