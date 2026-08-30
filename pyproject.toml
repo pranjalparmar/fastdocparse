@@ -61,3 +61,6 @@ fastdocparse = ["schemas/*.json", "py.typed"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff.lint.per-file-ignores]
+"src/fastdocparse/cli.py" = ["B008"]
