@@ -127,3 +127,21 @@ def test_schema_from_text_reports_generation_failure_cleanly(tmp_path):
     assert result.exit_code == 1
     assert "Could not generate a schema" in result.output
     assert not output_path.exists()
+
+
+def test_extract_command_missing_schema_shows_friendly_message():
+    """When schema is omitted, the user should see how to create one — not Typer's generic error."""
+    result = runner.invoke(app, ["extract", str(SAMPLE_IMAGE)])
+
+    assert result.exit_code == 1
+    assert "schema file is required" in result.output
+    assert "schema-from-text" in result.output
+    assert "list-schemas" in result.output
+
+
+def test_list_schemas_shows_bundled_schemas():
+    """list-schemas should enumerate at least the invoice.json bundled example."""
+    result = runner.invoke(app, ["list-schemas"])
+
+    assert result.exit_code == 0
+    assert "invoice" in result.output.lower()
