@@ -17,7 +17,7 @@ from pydantic import BaseModel
 
 
 class FieldResult(BaseModel):
-     """Typed result for a single extracted field.
+    """Typed result for a single extracted field.
 
     Attributes:
         value: The extracted value, or None if not found.
@@ -29,7 +29,6 @@ class FieldResult(BaseModel):
     value: Any
     confidence: str
     flags: list[str]
-   
 
 
 class ExtractionMeta(BaseModel):
