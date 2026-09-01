@@ -127,4 +127,4 @@ Want to contribute? Start with [docs/architecture.md](docs/architecture.md) for 
 
 ## Status
 
-Core extraction, grounding, chunking, both CLI/API paths, and real packaging are implemented and tested (74 tests, `pytest -v`). Published on PyPI as [`fastdocparse`](https://pypi.org/project/fastdocparse/) — `pip install fastdocparse` installs a working `fastdocparse` command and a proper `fastdocparse.*` import namespace, verified end to end with a clean-virtualenv install straight from the real public index. Not yet done: a hosted API — see [document-extractor-spec.md](document-extractor-spec.md) for the roadmap.
+Core extraction, grounding, chunking, both CLI/API paths, and real packaging are implemented and tested (75 tests, `pytest -v`). Published on PyPI as [`fastdocparse`](https://pypi.org/project/fastdocparse/) — `pip install fastdocparse` installs a working `fastdocparse` command and a proper `fastdocparse.*` import namespace, verified end to end with a clean-virtualenv install straight from the real public index. Not yet done: a hosted API — see [document-extractor-spec.md](document-extractor-spec.md) for the roadmap.

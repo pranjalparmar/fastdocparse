@@ -5,8 +5,8 @@ Step-by-step for both the no-code (CLI) path and the developer (Python API) path
 ## 1. Install
 
 ```bash
-git clone <this repo>
-cd document-extractor
+git clone https://github.com/pranjalparmar/fastdocparse
+cd fastdocparse
 python -m venv venv
 source venv/bin/activate        # Windows: venv\Scripts\activate
 pip install -e .

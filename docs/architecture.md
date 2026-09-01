@@ -47,7 +47,6 @@ graph TD
     schema_compiler --> schema
     schema_compiler --> llm_client
     schema_compiler --> json_repair
-    result --> schema
 
     parser --> schema
     parser --> config
