@@ -38,6 +38,12 @@ A schema is a JSON (or YAML) file listing the fields you want extracted. Two are
 
 Copy one and edit field names/descriptions for your document type, or write your own from scratch. See the [Schema Guide](schema-guide.md) for every option.
 
+Not sure what's bundled or where it lives? List them from the CLI:
+
+```bash
+fastdocparse list-schemas
+```
+
 **Don't want to write JSON at all?** Describe what you want in plain English:
 
 ```bash

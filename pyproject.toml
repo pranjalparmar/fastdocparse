@@ -1,6 +1,6 @@
 [project]
 name = "fastdocparse"
-version = "0.2.0"
+version = "0.3.0"
 description = "Extract structured data from semi-structured documents using any OpenAI-compatible LLM, with per-field grounding and confidence."
 readme = "README.md"
 license = "MIT"
