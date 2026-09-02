@@ -15,7 +15,26 @@ This list changes as priorities shift, if something here looks stale or wrong, o
 - **Hosted API** ([#20](https://github.com/pranjalparmar/fastdocparse/issues/20)): a thin HTTP wrapper (likely FastAPI) exposing the same schema-driven extraction as a POST endpoint. Auth, rate-limiting, and hosting are all undecided. Comment on the issue with a proposed approach before starting a PR here, this one is big enough to need alignment first.
 - **Hybrid OCR+VLM escalation for ungrounded fields**: cheap-extraction-first with a heavier VLM fallback isn't a novel pattern on its own, retry-with-fallback pipelines that escalate low-confidence fields to a VLM before human review already exist elsewhere. What fastdocparse could add that's less common as a polished abstraction is *field-level* escalation driven directly by the grounding signal it already computes: instead of re-running a whole document through a vision model when something looks wrong, escalate only the specific field that failed grounding, and only after trying to localize where the correct answer actually is on the page.
 
-  Rough shape: `PyMuPDF/RapidOCR (text + bbox)` → `LLM extraction` → `field-level grounding` → *(ungrounded field)* → `spatial bbox search for the right region` → `region retry` → *(still failing)* → `layout detector` → `VLM crop` → *(still failing)* → `whole-page VLM` → `human review`. Each rung only gets used if the cheaper one before it didn't resolve the field, so cost scales with how much a given document actually needs, not with a fixed vision-model-for-everything policy.
+  Rough shape, an escalation ladder where each rung only runs if the one before it didn't resolve the field, so cost scales with how much a given document actually needs, not with a fixed vision-model-for-everything policy:
+
+  ```mermaid
+  flowchart TD
+      A[PyMuPDF / RapidOCR: text + bbox] --> B[LLM extraction]
+      B --> C{Field-level grounding}
+      C -->|grounded| Z[Done: use extracted value]
+      C -->|ungrounded| D[Spatial bbox search for the right region]
+      D --> E[Region retry]
+      E --> F{Resolved?}
+      F -->|yes| Z
+      F -->|no| G[Layout detector]
+      G --> H[VLM crop]
+      H --> I{Resolved?}
+      I -->|yes| Z
+      I -->|no| J[Whole-page VLM]
+      J --> K{Resolved?}
+      K -->|yes| Z
+      K -->|no| L[Human review]
+  ```
 
   Known hard problems, not yet solved, before this is anything more than an idea:
   - **Crop discovery**: an ungrounded total tells you a field is suspicious, not where the correct value actually is on the page.
