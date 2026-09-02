@@ -4,6 +4,7 @@ Each test here reproduces a real bug found by hand — not a hypothetical — an
 fixed behavior down so it can't silently regress.
 """
 
+import signal
 import subprocess
 import sys
 from unittest.mock import MagicMock, patch
@@ -17,6 +18,15 @@ from fastdocparse.pdf_utils import chunk_document_text, extract_layout_markdown_
 from fastdocparse.schema import Field, Schema
 
 
+@pytest.mark.skipif(
+    not hasattr(signal, "SIGALRM"),
+    reason=(
+        "The ReDoS guard in grounding.py (_regex_matches_with_timeout) relies on "
+        "SIGALRM, which doesn't exist on Windows. There, the guard documents that it "
+        "runs the match with no timeout at all — a known, accepted gap, not something "
+        "this test can meaningfully assert against on this platform. See issue #28."
+    ),
+)
 def test_catastrophic_backtracking_pattern_does_not_hang():
     """A pathological user/LLM-supplied regex must not be able to hang extraction.
     Run in a subprocess with a hard wall-clock timeout — a naive thread-based guard
