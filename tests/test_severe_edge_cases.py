@@ -22,9 +22,10 @@ from fastdocparse.schema import Field, Schema
     not hasattr(signal, "SIGALRM"),
     reason=(
         "The ReDoS guard in grounding.py (_regex_matches_with_timeout) relies on "
-        "SIGALRM, which doesn't exist on Windows. There, the guard documents that it "
-        "runs the match with no timeout at all — a known, accepted gap, not something "
-        "this test can meaningfully assert against on this platform. See issue #28."
+        "SIGALRM. On any platform lacking it (Windows is the common case), the guard "
+        "documents that it runs the match with no timeout at all: a known, accepted "
+        "gap, not something this test can meaningfully assert against there. "
+        "See issue #28."
     ),
 )
 def test_catastrophic_backtracking_pattern_does_not_hang():
