@@ -13,7 +13,19 @@ This list changes as priorities shift, if something here looks stale or wrong, o
 ## Under discussion, not yet scoped
 
 - **Hosted API** ([#20](https://github.com/pranjalparmar/fastdocparse/issues/20)): a thin HTTP wrapper (likely FastAPI) exposing the same schema-driven extraction as a POST endpoint. Auth, rate-limiting, and hosting are all undecided. Comment on the issue with a proposed approach before starting a PR here, this one is big enough to need alignment first.
-- **Hybrid OCR+VLM escalation for ungrounded fields**: an idea to escalate a field to a vision-LLM pass specifically when grounding fails (i.e. the field-level confidence signal from Phase 2 already tells you exactly which fields are worth spending extra compute on), instead of running every document through a vision model unconditionally. Field-level localization would help target the escalation to just the relevant region of the page rather than the whole document. This is a genuinely interesting direction but hasn't been scoped into concrete tasks yet, treat it as a "maybe," not a commitment.
+- **Hybrid OCR+VLM escalation for ungrounded fields**: cheap-extraction-first with a heavier VLM fallback isn't a novel pattern on its own, retry-with-fallback pipelines that escalate low-confidence fields to a VLM before human review already exist elsewhere. What fastdocparse could add that's less common as a polished abstraction is *field-level* escalation driven directly by the grounding signal it already computes: instead of re-running a whole document through a vision model when something looks wrong, escalate only the specific field that failed grounding, and only after trying to localize where the correct answer actually is on the page.
+
+  Rough shape: `PyMuPDF/RapidOCR (text + bbox)` → `LLM extraction` → `field-level grounding` → *(ungrounded field)* → `spatial bbox search for the right region` → `region retry` → *(still failing)* → `layout detector` → `VLM crop` → *(still failing)* → `whole-page VLM` → `human review`. Each rung only gets used if the cheaper one before it didn't resolve the field, so cost scales with how much a given document actually needs, not with a fixed vision-model-for-everything policy.
+
+  Known hard problems, not yet solved, before this is anything more than an idea:
+  - **Crop discovery**: an ungrounded total tells you a field is suspicious, not where the correct value actually is on the page.
+  - **Context loss**: cropping too tightly can cut out the label that would've distinguished subtotal, total, and amount due.
+  - **Bad OCR breaks localization too**: if OCR missed the relevant text outright, a text-based bbox search has nothing to search against.
+  - **Confidence calibration**: a high-confidence extraction can still be wrong, and a flagged/low-confidence one can still be right, grounding is a useful signal, not a ground truth.
+  - **Result reconciliation**: if the OCR+LLM pass says one number and the VLM crop says another, there's no rule yet for which one wins.
+  - **Cost crossover**: enough retries and crops on one field can end up costing more than a single whole-page VLM pass would have, at which point the "escalate progressively" premise stops paying off.
+
+  Not scoped into concrete tasks yet, this is a "maybe, if the numbers support it," not a commitment. A reasonable first experiment (not yet started): pick one field type (e.g. `invoice_total`), preserve the existing PyMuPDF/RapidOCR bounding boxes, deliberately construct failing cases, and measure how often bbox-based localization alone can find the correct region before any VLM call is needed at all. That result would decide whether the rest of the ladder is worth building.
 
 ## Won't do (for now)
 
