@@ -12,7 +12,7 @@ a hallucinated schema silently corrupts every later run, so this is meant as
 an authoring aid with a human in the loop, not a fully implicit step.
 """
 
-from typing import Any, Dict
+from typing import Any
 
 from .json_repair import parse_json_from_llm
 from .llm_client import LLMClient
@@ -57,7 +57,7 @@ def compile_schema_from_description(description: str, client: LLMClient) -> Sche
     """Turn a natural-language description into a Schema via one LLM call."""
     prompt = SCHEMA_GEN_PROMPT.format(description=description)
     raw_response = client.complete(prompt)
-    data: Dict[str, Any] = parse_json_from_llm(raw_response)
+    data: dict[str, Any] = parse_json_from_llm(raw_response)
 
     if not data or not data.get("fields"):
         raise ValueError(

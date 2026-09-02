@@ -1,11 +1,14 @@
 """Recover a JSON object from raw LLM output that isn't guaranteed to be clean JSON."""
 
 import json
+import logging
 import re
-from typing import Any, Dict
+from typing import Any
+
+logger = logging.getLogger(__name__)
 
 
-def parse_json_from_llm(text: str) -> Dict[str, Any]:
+def parse_json_from_llm(text: str) -> dict[str, Any]:
     """Safely parse JSON from LLM output, handling markdown blocks and `<think>` tags."""
     text = text.strip()
     text = re.sub(r"<think\b[^>]*>.*?</think>", "", text, flags=re.DOTALL | re.IGNORECASE)
@@ -14,8 +17,8 @@ def parse_json_from_llm(text: str) -> Dict[str, Any]:
     if match:
         try:
             return json.loads(match.group(1).strip())
-        except Exception:
-            pass
+        except json.JSONDecodeError:
+            logger.debug("Ignoring invalid fenced JSON in LLM output.", exc_info=True)
 
     brace_positions = [i for i, c in enumerate(text) if c == "{"]
     for pos in reversed(brace_positions):
@@ -25,7 +28,8 @@ def parse_json_from_llm(text: str) -> Dict[str, Any]:
                 obj = json.loads(text[pos:end + 1])
                 if isinstance(obj, dict):
                     return obj
-            except Exception:
+            except json.JSONDecodeError:
+                logger.debug("Skipping invalid JSON candidate in LLM output.", exc_info=True)
                 continue
 
     # Nothing above found valid JSON — likely the response was cut off mid-object
@@ -35,7 +39,7 @@ def parse_json_from_llm(text: str) -> Dict[str, Any]:
     return _repair_truncated_json(text)
 
 
-def _repair_truncated_json(text: str) -> Dict[str, Any]:
+def _repair_truncated_json(text: str) -> dict[str, Any]:
     start = text.find("{")
     if start == -1:
         return {}
@@ -75,5 +79,5 @@ def _repair_truncated_json(text: str) -> Dict[str, Any]:
     try:
         obj = json.loads(repaired)
         return obj if isinstance(obj, dict) else {}
-    except Exception:
+    except json.JSONDecodeError:
         return {}

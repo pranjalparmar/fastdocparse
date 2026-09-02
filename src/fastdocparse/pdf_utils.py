@@ -3,17 +3,18 @@
 from __future__ import annotations
 
 import io
+import logging
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
 
 import pymupdf  # PyMuPDF
 from PIL import Image
 
 # Rendering constants
 PDF_RENDER_DPI = 150
+logger = logging.getLogger(__name__)
 
 
-def _safe_open_pdf(pdf_bytes: bytes) -> Optional["pymupdf.Document"]:
+def _safe_open_pdf(pdf_bytes: bytes) -> pymupdf.Document | None:
     """pymupdf.open() raises pymupdf.FileDataError/EmptyFileError (both RuntimeError
     subclasses, not ValueError) on corrupt or non-PDF bytes — a raw file upload gone
     wrong is an expected, common failure mode here, not a programming error, so it
@@ -21,7 +22,7 @@ def _safe_open_pdf(pdf_bytes: bytes) -> Optional["pymupdf.Document"]:
     that the same as "no text found," which the rest of the pipeline already handles."""
     try:
         return pymupdf.open(stream=pdf_bytes, filetype="pdf")
-    except Exception:
+    except (pymupdf.EmptyFileError, pymupdf.FileDataError, RuntimeError):
         return None
 
 
@@ -34,12 +35,12 @@ class PageImage:
     height: int         # image height in pixels
 
 
-def pdf_to_page_images(pdf_bytes: bytes, max_pages: int = 3, dpi: int = PDF_RENDER_DPI, max_dim: int = 1536) -> List[PageImage]:
+def pdf_to_page_images(pdf_bytes: bytes, max_pages: int = 3, dpi: int = PDF_RENDER_DPI, max_dim: int = 1536) -> list[PageImage]:
     """Render up to max_pages of a PDF to a PNG image at the given DPI.
 
     Returns a list of PageImage in page order.
     """
-    pages: List[PageImage] = []
+    pages: list[PageImage] = []
     doc = _safe_open_pdf(pdf_bytes)
     if doc is None:
         return pages
@@ -98,7 +99,7 @@ def image_bytes_to_page_image(img_bytes: bytes) -> PageImage:
     return PageImage(index=0, png_bytes=buf.getvalue(), width=img.width, height=img.height)
 
 
-def _grid_to_markdown(grid: List[List[str]]) -> str:
+def _grid_to_markdown(grid: list[list[str]]) -> str:
     """Convert a 2D table array into a clean Markdown table string."""
     if not grid or not grid[0]:
         return ""
@@ -116,7 +117,7 @@ def _grid_to_markdown(grid: List[List[str]]) -> str:
     return "\n".join(lines)
 
 
-def _bbox_overlaps(b1: Tuple[float, float, float, float], b2: Tuple[float, float, float, float], thresh: float = 0.5) -> bool:
+def _bbox_overlaps(b1: tuple[float, float, float, float], b2: tuple[float, float, float, float], thresh: float = 0.5) -> bool:
     """Check if block b1 overlaps significantly with table bbox b2."""
     x0 = max(b1[0], b2[0])
     y0 = max(b1[1], b2[1])
@@ -132,7 +133,7 @@ def _bbox_overlaps(b1: Tuple[float, float, float, float], b2: Tuple[float, float
 def extract_layout_markdown_from_pdf(pdf_bytes: bytes, max_pages: int = 15, structured_mode: bool = False) -> str:
     """Phase 1 Engine: Extract digital PDF into layout-preserved Markdown text."""
     doc = _safe_open_pdf(pdf_bytes)
-    pages_md: List[str] = []
+    pages_md: list[str] = []
     if doc is None:
         return ""
     try:
@@ -140,22 +141,26 @@ def extract_layout_markdown_from_pdf(pdf_bytes: bytes, max_pages: int = 15, stru
             page = doc[i]
             
             # 1. Extract tables
-            table_bboxes: List[Tuple[float, float, float, float]] = []
-            table_markdowns: List[Tuple[float, str]] = []  # (y0, markdown_str)
+            table_bboxes: list[tuple[float, float, float, float]] = []
+            table_markdowns: list[tuple[float, str]] = []  # (y0, markdown_str)
             try:
                 tabs = page.find_tables()
                 for tab in tabs.tables:
-                    grid = tab.extract()
+                    try:
+                        grid = tab.extract()
+                    except (RuntimeError, TypeError, ValueError):
+                        logger.debug("Skipping failed PDF table extraction.", exc_info=True)
+                        continue
                     md = _grid_to_markdown(grid)
                     if md:
                         table_bboxes.append(tab.bbox)
                         table_markdowns.append((tab.bbox[1], md))
-            except Exception:
-                pass
+            except (RuntimeError, TypeError, ValueError):
+                logger.debug("Skipping failed PDF table discovery.", exc_info=True)
 
             # 2. Extract text blocks outside tables
             blocks = page.get_text("blocks")
-            non_table_blocks: List[Tuple[float, float, str]] = []  # (y0, x0, text)
+            non_table_blocks: list[tuple[float, float, str]] = []  # (y0, x0, text)
             for b in blocks:
                 if len(b) >= 5 and b[4].strip():
                     bbox = (b[0], b[1], b[2], b[3])
@@ -167,7 +172,7 @@ def extract_layout_markdown_from_pdf(pdf_bytes: bytes, max_pages: int = 15, stru
                             non_table_blocks.append((b[1], b[0], b[4].strip()))
 
             # 3. Merge blocks & tables spatially top-to-bottom
-            all_elements: List[Tuple[float, float, str]] = []
+            all_elements: list[tuple[float, float, str]] = []
             for y0, x0, text in non_table_blocks:
                 all_elements.append((y0, x0, text))
             for y0, md in table_markdowns:
@@ -192,7 +197,7 @@ def extract_text_from_pdf(pdf_bytes: bytes, max_pages: int = 15, structured_mode
     
     # Fallback to plain text
     doc = _safe_open_pdf(pdf_bytes)
-    texts: List[str] = []
+    texts: list[str] = []
     if doc is None:
         return ""
     try:
@@ -221,7 +226,7 @@ def is_digital_pdf(pdf_bytes: bytes, min_chars: int = 80) -> bool:
     return False
 
 
-def chunk_document_text(text: str, max_tokens: int = 3000) -> List[str]:
+def chunk_document_text(text: str, max_tokens: int = 3000) -> list[str]:
     """
     Split document text into chunks based on page delimiters.
     Approximates tokens via character count (4 chars ~ 1 token).

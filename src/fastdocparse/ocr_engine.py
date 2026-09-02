@@ -6,7 +6,6 @@ import importlib.util
 import io
 import logging
 import threading
-from typing import List, Tuple
 
 from PIL import Image
 
@@ -34,8 +33,9 @@ def _get_rapid_ocr():
             return _rapid_ocr
         try:
             from rapidocr_onnxruntime import RapidOCR
+
             _rapid_ocr = RapidOCR()
-        except Exception:
+        except (ImportError, OSError, RuntimeError, ValueError):
             logger.warning("RapidOCR failed to initialize; OCR extraction will return empty text.", exc_info=True)
             _init_failed = True
     return _rapid_ocr
@@ -72,7 +72,7 @@ def extract_text_from_image_ocr(image_bytes: bytes, structured_mode: bool = Fals
         if not result:
             return ""
 
-        lines: List[Tuple[float, float, str]] = []
+        lines: list[tuple[float, float, str]] = []
         for box, text, conf in result:
             conf_val = float(conf) if conf is not None else 0.0
             if conf_val > min_confidence and text and str(text).strip():
@@ -82,9 +82,9 @@ def extract_text_from_image_ocr(image_bytes: bytes, structured_mode: bool = Fals
 
         lines.sort(key=lambda item: (round(item[0] / 15), item[1]))
 
-        grouped_lines: List[str] = []
+        grouped_lines: list[str] = []
         current_y_group = -1
-        current_line_parts: List[str] = []
+        current_line_parts: list[str] = []
 
         for y0, x0, text in lines:
             group = round(y0 / 15)
@@ -105,5 +105,5 @@ def extract_text_from_image_ocr(image_bytes: bytes, structured_mode: bool = Fals
             grouped_lines.append("    ".join(current_line_parts))
 
         return "\n".join(grouped_lines)
-    except Exception:
+    except (OSError, RuntimeError, TypeError, ValueError):
         return ""

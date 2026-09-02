@@ -1,14 +1,14 @@
 """Prompt compiler for generating dynamic Chain-of-Thought prompts from schemas."""
 
 import json
-from typing import Any, Dict
+from typing import Any
 
 from .schema import Field, Schema
 
 
-def _generate_json_structure(fields: list[Field]) -> Dict[str, Any]:
+def _generate_json_structure(fields: list[Field]) -> dict[str, Any]:
     """Generate a sample JSON structure representing the schema."""
-    structure: Dict[str, Any] = {}
+    structure: dict[str, Any] = {}
     for f in fields:
         if f.type == "list" and f.sub_fields:
             structure[f.name] = [_generate_json_structure(f.sub_fields)]

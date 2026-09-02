@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, patch
 
 from typer.testing import CliRunner
 
+from fastdocparse import __version__
 from fastdocparse.cli import app
 
 runner = CliRunner()
@@ -33,6 +34,13 @@ def test_extract_command_success():
     payload = json.loads(result.output)
     assert payload["invoice_number"]["value"] == "INV-1"
     assert "_meta" in payload
+
+
+def test_version_flag_prints_package_version():
+    result = runner.invoke(app, ["--version"])
+
+    assert result.exit_code == 0
+    assert result.output.strip() == f"fastdocparse {__version__}"
 
 
 def test_extract_command_rejects_unsupported_extension(tmp_path):

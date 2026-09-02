@@ -1,12 +1,13 @@
 """Grounding and validation checks for extracted data."""
+from __future__ import annotations
 
 import logging
 import re
 import signal
 import threading
 from dataclasses import dataclass
-from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional
+from datetime import datetime, timezone
+from typing import Any, Callable, Optional
 
 from .schema import Schema
 
@@ -27,7 +28,7 @@ class _PatternTimeout(Exception):
     pass
 
 
-def _regex_matches_with_timeout(pattern: str, value: str, timeout: float = 1.0) -> Optional[bool]:
+def _regex_matches_with_timeout(pattern: str, value: str, timeout: float = 1.0) -> bool | None:
     """Guard re.fullmatch against a catastrophically backtracking pattern (e.g.
     "^(a+)+$" against a long near-miss string), since `pattern` is arbitrary user- or
     LLM-supplied regex that can otherwise hang indefinitely.
@@ -83,13 +84,13 @@ class Issue:
     kind: str = "cross_check"  # "cross_check" | "missing_required" | "invalid_format"
 
 
-CrossCheckRule = Callable[[Dict[str, Any]], Optional[List[Issue]]]
+CrossCheckRule = Callable[[dict[str, Any]], Optional[list[Issue]]]
 
 
 _NUMBER_RE = re.compile(r'-?\d[\d,]*\.?\d*')
 
 
-def _as_number(value: Any) -> Optional[float]:
+def _as_number(value: Any) -> float | None:
     """Parse an int/float or a numeric-looking string (currency symbols, thousands separators) into a float."""
     if isinstance(value, bool):
         return None
@@ -104,7 +105,7 @@ def _as_number(value: Any) -> Optional[float]:
     return None
 
 
-def _extract_numbers(text: str) -> List[float]:
+def _extract_numbers(text: str) -> list[float]:
     numbers = []
     for match in _NUMBER_RE.findall(text):
         try:
@@ -134,7 +135,7 @@ def _parse_date_any(text: str):
     text = text.strip()
     for fmt in _DATE_FORMATS:
         try:
-            return datetime.strptime(text, fmt).date()
+            return datetime.strptime(text, fmt).replace(tzinfo=timezone.utc).date()
         except ValueError:
             continue
     return None
@@ -200,13 +201,13 @@ def check_substring(value: Any, source_text: str, numeric: bool = False, date: b
     return bool(val_clean and val_clean in source_clean)
 
 
-def validate_field_constraints(schema: Schema, extracted: Dict[str, Any]) -> List[Issue]:
+def validate_field_constraints(schema: Schema, extracted: dict[str, Any]) -> list[Issue]:
     """Check schema-declared constraints (required, pattern, enum) against extracted values.
 
     Runs automatically for every schema, independent of any user-supplied cross_check rules —
     these constraints are properties of the schema itself (any domain), not custom business logic.
     """
-    issues: List[Issue] = []
+    issues: list[Issue] = []
     for f in schema.fields:
         value = extracted.get(f.name)
         is_missing = not _is_present(value) or (f.type == "list" and not value)
@@ -244,7 +245,7 @@ def validate_field_constraints(schema: Schema, extracted: Dict[str, Any]) -> Lis
 def numeric_sum_rule(list_field: str, total_field: str, item_key: str = "amount", tolerance: float = 0.01) -> CrossCheckRule:
     """Build a rule flagging total_field when it doesn't match the sum of item_key across list_field."""
 
-    def _rule(extracted: Dict[str, Any]) -> Optional[List[Issue]]:
+    def _rule(extracted: dict[str, Any]) -> list[Issue] | None:
         total = extracted.get(total_field)
         items = extracted.get(list_field)
         if total is None or not items:
@@ -264,19 +265,17 @@ def numeric_sum_rule(list_field: str, total_field: str, item_key: str = "amount"
     return _rule
 
 
-def date_parseable_rule(field_name: str, formats: Optional[List[str]] = None) -> CrossCheckRule:
+def date_parseable_rule(field_name: str, formats: list[str] | None = None) -> CrossCheckRule:
     """Build a rule flagging field_name when its value doesn't parse as a date in any given format."""
-    from datetime import datetime
-
     candidates = formats or ["%Y-%m-%d", "%m/%d/%Y", "%d/%m/%Y", "%Y/%m/%d"]
 
-    def _rule(extracted: Dict[str, Any]) -> Optional[List[Issue]]:
+    def _rule(extracted: dict[str, Any]) -> list[Issue] | None:
         val = extracted.get(field_name)
         if val is None:
             return None
         for fmt in candidates:
             try:
-                datetime.strptime(str(val), fmt)
+                datetime.strptime(str(val), fmt).replace(tzinfo=timezone.utc)
                 return None
             except ValueError:
                 continue
@@ -285,12 +284,12 @@ def date_parseable_rule(field_name: str, formats: Optional[List[str]] = None) ->
     return _rule
 
 
-def cross_check(schema: Schema, extracted: Dict[str, Any], rules: Optional[List[CrossCheckRule]]) -> List[Issue]:
+def cross_check(schema: Schema, extracted: dict[str, Any], rules: list[CrossCheckRule] | None) -> list[Issue]:
     """
     Run custom cross-check rules on the extracted data.
     Each rule is a callable taking the extracted dict and returning a list of Issues (or None).
     """
-    issues: List[Issue] = []
+    issues: list[Issue] = []
     if not rules:
         return issues
 

@@ -1,6 +1,6 @@
 # Schema Guide
 
-A schema declares *what* to extract. It works identically whether you write it as JSON, YAML, or Python — same fields, same meaning, same validation.
+A schema declares *what* to extract. It works identically whether you write it as JSON, YAML, or Python: same fields, same meaning, same validation.
 
 ## Minimal schema
 
@@ -19,13 +19,13 @@ A schema declares *what* to extract. It works identically whether you write it a
 
 | Key | Type | Default | Meaning |
 |---|---|---|---|
-| `name` | string | — (required) | Output key. Use `snake_case`, no spaces. |
-| `description` | string | — (required) | Tells the LLM what to look for. Be specific — this is the main lever for extraction accuracy. |
+| `name` | string | n/a (required) | Output key. Use `snake_case`, no spaces. |
+| `description` | string | n/a (required) | Tells the LLM what to look for. Be specific: this is the main lever for extraction accuracy. |
 | `type` | `"text"` \| `"number"` \| `"date"` \| `"currency"` \| `"list"` | `"text"` | `"list"` triggers structured (layout-aware) extraction mode automatically. Other types are descriptive hints for the LLM, not enforced coercion. |
 | `required` | bool | `false` | If `true` and the field comes back empty, the result is flagged `missing_required`. |
 | `pattern` | string (regex) or `null` | `null` | If the extracted value doesn't fully match this regex, flagged `invalid_format`. Use for structured codes: HS codes, container numbers, SSNs, invoice number formats. |
 | `enum` | list of strings or `null` | `null` | If the value isn't one of these, flagged `invalid_format`. Use for closed vocabularies: shipment status, currency codes, filing status. |
-| `sub_fields` | list of `Field` or `null` | `null` | Only for `type: "list"` — describes each item's columns (e.g. a line-items table). |
+| `sub_fields` | list of `Field` or `null` | `null` | Only for `type: "list"`: describes each item's columns (e.g. a line-items table). |
 
 ## Example: a table field (`sub_fields`)
 
@@ -85,7 +85,7 @@ Schemas can include example (document snippet → expected output) pairs. Useful
 }
 ```
 
-Each example is a 2-element array: `[document_snippet_string, expected_output_object]`. The expected output must cover the fields you want to demonstrate — it doesn't need every field in the schema.
+Each example is a 2-element array: `[document_snippet_string, expected_output_object]`. The expected output must cover the fields you want to demonstrate; it doesn't need every field in the schema.
 
 See [`src/fastdocparse/schemas/invoice.json`](../src/fastdocparse/schemas/invoice.json) for a complete example with a few-shot pair.
 
@@ -97,7 +97,7 @@ from fastdocparse import Schema
 schema = Schema.from_file("src/fastdocparse/schemas/invoice.json")   # or .yaml/.yml
 ```
 
-**CLI:** pass the path directly — `fastdocparse extract doc.pdf src/fastdocparse/schemas/invoice.json`.
+**CLI:** pass the path directly: `fastdocparse extract doc.pdf src/fastdocparse/schemas/invoice.json`.
 
 ## Writing a schema in Python instead of JSON
 
@@ -115,7 +115,7 @@ schema = Schema(
 )
 ```
 
-Use this path when you need something a static schema file can't express — e.g. building the field list dynamically at runtime.
+Use this path when you need something a static schema file can't express, e.g. building the field list dynamically at runtime.
 
 ## Generating a schema from plain English
 
@@ -127,7 +127,7 @@ fastdocparse schema-from-text \
   --output schemas/my_manifest.json
 ```
 
-This sends your description to the LLM once and writes a schema file in the exact format above. **Always open and review the generated file before trusting it for real extraction** — the LLM is inferring field names, types, and constraints from your wording, and mistakes here are silent (a wrong `pattern` or missing `required` won't error, it'll just quietly under- or over-flag every document you later run against this schema).
+This sends your description to the LLM once and writes a schema file in the exact format above. **Always open and review the generated file before trusting it for real extraction.** The LLM is inferring field names, types, and constraints from your wording, and mistakes here are silent (a wrong `pattern` or missing `required` won't error, it'll just quietly under- or over-flag every document you later run against this schema).
 
 Good descriptions to feed it:
 - List the specific fields you want, don't just name the document type ("extract the fields" is too vague; "extract invoice number, total price, and vendor name" works).

@@ -1,11 +1,12 @@
 """Parser module orchestrating document extraction."""
+from __future__ import annotations
 
 import asyncio
 import functools
 import logging
 import re
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable
 
 import pymupdf
 
@@ -55,7 +56,7 @@ class UnknownIngestionKindError(ValueError):
     """
 
 
-def _merge_extracted_data(results: List[Dict[str, Any]], chunks: List[str], schema: Schema) -> Dict[str, Any]:
+def _merge_extracted_data(results: list[dict[str, Any]], chunks: list[str], schema: Schema) -> dict[str, Any]:
     """Merge per-chunk extractions into one result.
 
     List fields concatenate across chunks (unchanged). For scalar fields, when more than
@@ -68,7 +69,7 @@ def _merge_extracted_data(results: List[Dict[str, Any]], chunks: List[str], sche
     if not results:
         return {}
 
-    merged: Dict[str, Any] = {}
+    merged: dict[str, Any] = {}
     for f in schema.fields:
         merged[f.name] = [] if f.type == "list" else None
 
@@ -122,7 +123,7 @@ def _ingest_image(document_bytes: bytes, structured_mode: bool, config: Extracti
     )
 
 
-INGESTION_HANDLERS: Dict[str, Callable[[bytes, bool, ExtractionConfig], str]] = {
+INGESTION_HANDLERS: dict[str, Callable[[bytes, bool, ExtractionConfig], str]] = {
     "pdf": _ingest_pdf,
     "image": _ingest_image,
 }
@@ -151,9 +152,9 @@ class DocumentParser:
     def __init__(
         self,
         client: LLMClient,
-        config: Optional[ExtractionConfig] = None,
-        cache: Optional[Cache] = None,
-        ingestion_handlers: Optional[Dict[str, Callable[[bytes, bool, ExtractionConfig], str]]] = None,
+        config: ExtractionConfig | None = None,
+        cache: Cache | None = None,
+        ingestion_handlers: dict[str, Callable[[bytes, bool, ExtractionConfig], str]] | None = None,
     ):
         self.client = client
         self.config = config or ExtractionConfig()
@@ -171,9 +172,9 @@ class DocumentParser:
         document_bytes: bytes,
         schema: Schema,
         is_image: bool = False,
-        rules: Optional[List[CrossCheckRule]] = None,
-        kind: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        rules: list[CrossCheckRule] | None = None,
+        kind: str | None = None,
+    ) -> dict[str, Any]:
         """Extract information from a document matching the schema.
 
         kind overrides routing when set (must be registered via register_ingestion_handler
@@ -223,9 +224,9 @@ class DocumentParser:
         document_bytes: bytes,
         schema: Schema,
         is_image: bool = False,
-        rules: Optional[List[CrossCheckRule]] = None,
-        kind: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        rules: list[CrossCheckRule] | None = None,
+        kind: str | None = None,
+    ) -> dict[str, Any]:
         """Async wrapper around extract(). The work itself is still synchronous (OCR,
         PDF parsing, and the LLM SDK calls are all blocking) — this runs it in a
         background thread so an asyncio event loop (e.g. inside a FastAPI route) isn't
@@ -241,7 +242,7 @@ class DocumentParser:
             raise UnknownIngestionKindError(f"No ingestion handler registered for document kind {kind!r}")
         return handler
 
-    def _check_truncation(self, document_bytes: bytes, kind: str) -> tuple[bool, Optional[str]]:
+    def _check_truncation(self, document_bytes: bytes, kind: str) -> tuple[bool, str | None]:
         if kind != "pdf":
             return False, None
         try:
@@ -252,10 +253,10 @@ class DocumentParser:
                 return False, None
             finally:
                 doc.close()
-        except Exception:
+        except (pymupdf.EmptyFileError, pymupdf.FileDataError, RuntimeError):
             return False, None
 
-    def _run_extraction(self, chunks: List[str], schema: Schema) -> Dict[str, Any]:
+    def _run_extraction(self, chunks: list[str], schema: Schema) -> dict[str, Any]:
         prompt_template = compile_prompt(schema)
         max_workers = self.config.max_concurrent_chunks
 
@@ -264,7 +265,7 @@ class DocumentParser:
             # involved — keeps behavior (and mock call ordering in tests) unchanged.
             parsed_chunks = [_parse_json_from_llm(self.client.extract(prompt_template, chunk)) for chunk in chunks]
         else:
-            def process(chunk: str) -> Dict[str, Any]:
+            def process(chunk: str) -> dict[str, Any]:
                 return _parse_json_from_llm(self.client.extract(prompt_template, chunk))
 
             with ThreadPoolExecutor(max_workers=max_workers) as executor:
@@ -275,14 +276,14 @@ class DocumentParser:
     def _build_result(
         self,
         schema: Schema,
-        merged_data: Dict[str, Any],
+        merged_data: dict[str, Any],
         doc_text: str,
-        rules: Optional[list],
+        rules: list | None,
         is_truncated: bool,
-        truncation_reason: Optional[str],
-    ) -> Dict[str, Any]:
+        truncation_reason: str | None,
+    ) -> dict[str, Any]:
         issues = cross_check(schema, merged_data, rules) + validate_field_constraints(schema, merged_data)
-        issues_by_field: Dict[str, List[Issue]] = {}
+        issues_by_field: dict[str, list[Issue]] = {}
         for issue in issues:
             issues_by_field.setdefault(issue.field, []).append(issue)
         issue_kind_to_flag = {
@@ -291,7 +292,7 @@ class DocumentParser:
             "invalid_format": "invalid_format",
         }
 
-        final_result: Dict[str, Any] = {
+        final_result: dict[str, Any] = {
             "_meta": {
                 "truncated": is_truncated,
                 "truncation_reason": truncation_reason,

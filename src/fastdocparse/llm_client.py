@@ -1,7 +1,7 @@
 """OpenAI-compatible LLM client for document extraction."""
+from __future__ import annotations
 
 import time
-from typing import List, Optional
 
 from openai import (
     APIConnectionError,
@@ -20,7 +20,7 @@ class LLMClientError(Exception):
 class LLMClient:
     """A thin adapter over any OpenAI-compatible endpoint."""
 
-    def __init__(self, base_url: Optional[str] = None, api_key: Optional[str] = None, model: Optional[str] = None):
+    def __init__(self, base_url: str | None = None, api_key: str | None = None, model: str | None = None):
         """Initialize the LLM client.
 
         Args:
@@ -39,9 +39,9 @@ class LLMClient:
             timeout=60.0
         )
 
-    def _call(self, messages: List[ChatCompletionMessageParam], temperature: float, max_tokens: int, retries: int = 2, backoff: float = 1.0) -> str:
+    def _call(self, messages: list[ChatCompletionMessageParam], temperature: float, max_tokens: int, retries: int = 2, backoff: float = 1.0) -> str:
         """Run a chat completion, retrying transient failures and raising LLMClientError on exhaustion."""
-        last_error: Optional[Exception] = None
+        last_error: Exception | None = None
         for attempt in range(retries + 1):
             try:
                 response = self.client.chat.completions.create(

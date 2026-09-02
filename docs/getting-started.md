@@ -5,8 +5,8 @@ Step-by-step for both the no-code (CLI) path and the developer (Python API) path
 ## 1. Install
 
 ```bash
-git clone <this repo>
-cd document-extractor
+git clone https://github.com/pranjalparmar/fastdocparse
+cd fastdocparse
 python -m venv venv
 source venv/bin/activate        # Windows: venv\Scripts\activate
 pip install -e .
@@ -16,27 +16,27 @@ pip install -e .
 
 You need one of:
 
-- **OpenAI** — an API key from https://platform.openai.com/. No local install.
-- **A local model via Ollama** (recommended if your documents are sensitive — nothing leaves your machine):
+- **OpenAI**: an API key from https://platform.openai.com/. No local install.
+- **A local model via Ollama** (recommended if your documents are sensitive, since nothing leaves your machine):
   1. Install Ollama: https://ollama.com/
   2. Pull a model: `ollama run llama3.2` (or any model that supports JSON-mode-style output)
   3. Ollama serves an OpenAI-compatible API at `http://localhost:11434/v1` automatically.
-- **Any other OpenAI-compatible endpoint** (vLLM, Groq, etc.) — just its base URL, API key, and model name.
+- **Any other OpenAI-compatible endpoint** (vLLM, Groq, etc.): just its base URL, API key, and model name.
 
-Nothing in this project is tied to OpenAI specifically — swapping `--base-url`/`--model` is the only change needed to switch providers.
+Nothing in this project is tied to OpenAI specifically. Swapping `--base-url`/`--model` is the only change needed to switch providers.
 
 ---
 
-## Path A — CLI (no coding)
+## Path A: CLI (no coding)
 
 ### A.1 Pick or write a schema
 
 A schema is a JSON (or YAML) file listing the fields you want extracted. Two are bundled as starting points:
 
-- [`src/fastdocparse/schemas/invoice.json`](../src/fastdocparse/schemas/invoice.json) — invoice number, dates, parties, line items, few-shot examples included.
-- [`src/fastdocparse/schemas/shipment_manifest.json`](../src/fastdocparse/schemas/shipment_manifest.json) — bill of lading, container number, HS code, shipment status (with `required`/`pattern`/`enum` constraints).
+- [`src/fastdocparse/schemas/invoice.json`](../src/fastdocparse/schemas/invoice.json): invoice number, dates, parties, line items, few-shot examples included.
+- [`src/fastdocparse/schemas/shipment_manifest.json`](../src/fastdocparse/schemas/shipment_manifest.json): bill of lading, container number, HS code, shipment status (with `required`/`pattern`/`enum` constraints).
 
-Copy one and edit field names/descriptions for your document type, or write your own from scratch — see the [Schema Guide](schema-guide.md) for every option.
+Copy one and edit field names/descriptions for your document type, or write your own from scratch. See the [Schema Guide](schema-guide.md) for every option.
 
 **Don't want to write JSON at all?** Describe what you want in plain English:
 
@@ -46,7 +46,7 @@ fastdocparse schema-from-text \
   --output schemas/my_invoice.json
 ```
 
-This makes one LLM call, writes `schemas/my_invoice.json`, and prints a confirmation. **Open the file and check it before using it for real extraction** — the LLM is guessing field names/types from your wording, and a wrong guess here will affect every document you run against this schema afterward.
+This makes one LLM call, writes `schemas/my_invoice.json`, and prints a confirmation. **Open the file and check it before using it for real extraction.** The LLM is guessing field names/types from your wording, and a wrong guess here will affect every document you run against this schema afterward.
 
 ### A.2 Run extraction
 
@@ -82,7 +82,7 @@ See [Output & Validation](output-format.md) for the full shape and what each fla
 
 ---
 
-## Path B — Python API
+## Path B: Python API
 
 ### B.1 Define a schema in code
 
@@ -181,12 +181,12 @@ result = parser.extract(docx_bytes, schema, kind="docx")
 
 `DocumentParser.register_ingestion_handler()` (instance method) scopes the handler to
 that one parser. There's also a module-level `parser.register_default_ingestion_handler()`
-that changes what *new* `DocumentParser()` instances get by default — deliberately a
+that changes what *new* `DocumentParser()` instances get by default. It's deliberately a
 different name, so it's never confused with the instance-scoped version at a call site.
 
 **Using this from the CLI:** a fresh CLI process only knows the built-in `pdf`/`image`
 handlers, so a custom `kind` needs to be registered before the CLI dispatches. Set
-`FASTDOCPARSE_PLUGINS` to a comma-separated list of importable module names — each one is
+`FASTDOCPARSE_PLUGINS` to a comma-separated list of importable module names. Each one is
 imported at CLI startup, so put your `register_default_ingestion_handler(...)` call at
 module level in that file:
 
@@ -195,7 +195,7 @@ FASTDOCPARSE_PLUGINS=my_project.docx_plugin fastdocparse extract contract.docx s
 ```
 
 **Security note:** this imports and runs whatever Python is in the module(s) you name,
-with no sandboxing — the same trust model as `PYTHONSTARTUP` or `DJANGO_SETTINGS_MODULE`.
+with no sandboxing, the same trust model as `PYTHONSTARTUP` or `DJANGO_SETTINGS_MODULE`.
 That's fine for pointing it at your own plugin on your own machine. Never let
 `FASTDOCPARSE_PLUGINS` be set from an untrusted source (e.g. a parameter in a hosted
 service built on top of this CLI).

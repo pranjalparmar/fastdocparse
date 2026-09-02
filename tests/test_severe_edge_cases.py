@@ -13,7 +13,7 @@ import pytest
 from fastdocparse.grounding import validate_field_constraints
 from fastdocparse.json_repair import parse_json_from_llm
 from fastdocparse.parser import DocumentParser, EmptyDocumentError
-from fastdocparse.pdf_utils import chunk_document_text
+from fastdocparse.pdf_utils import chunk_document_text, extract_layout_markdown_from_pdf
 from fastdocparse.schema import Field, Schema
 
 
@@ -41,7 +41,7 @@ def test_catastrophic_backtracking_pattern_does_not_hang():
         "print(f'ELAPSED={time.time() - start}')\n"
     )
     # Generous outer bound — this only needs to catch a genuine hang, not time the guard.
-    result = subprocess.run([sys.executable, "-c", code], timeout=30, capture_output=True, text=True)
+    result = subprocess.run([sys.executable, "-c", code], timeout=30, capture_output=True, text=True, check=False)
     assert result.returncode == 0, result.stderr
 
     elapsed_line = next(line for line in result.stdout.splitlines() if line.startswith("ELAPSED="))
@@ -131,3 +131,52 @@ def test_json_with_literal_braces_inside_string_values():
     raw = '{"description": "Use {curly} braces and {more} braces", "total": 100}'
     result = parse_json_from_llm(raw)
     assert result == {"description": "Use {curly} braces and {more} braces", "total": 100}
+
+
+def test_partial_table_data_survives_late_table_extraction_failure():
+    class FakeTable:
+        def __init__(self, bbox, grid=None, error=None):
+            self.bbox = bbox
+            self._grid = grid
+            self._error = error
+
+        def extract(self):
+            if self._error is not None:
+                raise self._error
+            return self._grid
+
+    class FakePage:
+        def find_tables(self):
+            return MagicMock(
+                tables=[
+                    FakeTable((0.0, 0.0, 100.0, 50.0), grid=[["A", "B"], ["1", "2"]]),
+                    FakeTable((0.0, 60.0, 100.0, 110.0), error=ValueError("broken table")),
+                ]
+            )
+
+        def get_text(self, mode):
+            assert mode == "blocks"
+            return [
+                (10.0, 10.0, 20.0, 20.0, "inside table", 0, 0),
+                (10.0, 120.0, 20.0, 130.0, "outside table", 0, 0),
+            ]
+
+    class FakeDoc:
+        def __len__(self):
+            return 1
+
+        def __getitem__(self, index):
+            assert index == 0
+            return FakePage()
+
+        def close(self):
+            return None
+
+    with patch("fastdocparse.pdf_utils._safe_open_pdf", return_value=FakeDoc()):
+        markdown = extract_layout_markdown_from_pdf(b"pdf")
+
+    assert "| A | B |" in markdown
+    assert "| --- | --- |" in markdown
+    assert "| 1 | 2 |" in markdown
+    assert "outside table" in markdown
+    assert "inside table" not in markdown

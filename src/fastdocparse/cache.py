@@ -4,19 +4,20 @@ Caching is skipped whenever custom `rules` are passed to extract(), since a rule
 arbitrary callable that can't be safely fingerprinted — caching would risk returning a
 result validated under a different rule than the one just requested.
 """
+from __future__ import annotations
 
 import hashlib
 import json
 from collections import OrderedDict
-from typing import Any, Callable, Dict, Optional, Protocol
+from typing import Any, Callable, Protocol
 
 from .config import ExtractionConfig
 from .schema import Schema
 
 
 class Cache(Protocol):
-    def get(self, key: str) -> Optional[Dict[str, Any]]: ...
-    def set(self, key: str, value: Dict[str, Any]) -> None: ...
+    def get(self, key: str) -> dict[str, Any] | None: ...
+    def set(self, key: str, value: dict[str, Any]) -> None: ...
 
 
 class InMemoryCache:
@@ -27,19 +28,19 @@ class InMemoryCache:
     process exits before the cache could grow unbounded.
     """
 
-    def __init__(self, max_size: Optional[int] = None):
+    def __init__(self, max_size: int | None = None):
         if max_size is not None and max_size <= 0:
             raise ValueError(f"max_size must be positive, got {max_size}")
         self._max_size = max_size
-        self._store: "OrderedDict[str, Dict[str, Any]]" = OrderedDict()
+        self._store: OrderedDict[str, dict[str, Any]] = OrderedDict()
 
-    def get(self, key: str) -> Optional[Dict[str, Any]]:
+    def get(self, key: str) -> dict[str, Any] | None:
         if key not in self._store:
             return None
         self._store.move_to_end(key)
         return self._store[key]
 
-    def set(self, key: str, value: Dict[str, Any]) -> None:
+    def set(self, key: str, value: dict[str, Any]) -> None:
         self._store[key] = value
         self._store.move_to_end(key)
         if self._max_size is not None:
