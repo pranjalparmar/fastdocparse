@@ -153,3 +153,19 @@ def test_list_schemas_shows_bundled_schemas():
 
     assert result.exit_code == 0
     assert "invoice" in result.output.lower()
+
+
+def test_extract_command_rejects_unreadable_schema_cleanly(tmp_path):
+    """A schema that exists but can't be read (permission denied) must fail with a clean
+    Typer-level error, not skip straight past the friendly-missing-schema path and crash
+    later with a raw OSError when the code tries to actually open it."""
+    unreadable_schema = tmp_path / "no_access.json"
+    unreadable_schema.write_text('{"name": "T", "fields": []}')
+    unreadable_schema.chmod(0o000)
+    try:
+        result = runner.invoke(app, ["extract", str(SAMPLE_IMAGE), str(unreadable_schema)])
+    finally:
+        unreadable_schema.chmod(0o644)
+
+    assert result.exit_code != 0
+    assert "readable" in result.output.lower()

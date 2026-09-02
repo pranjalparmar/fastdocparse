@@ -73,7 +73,7 @@ def main(
 @app.command()
 def extract(
     file: Path = typer.Argument(..., exists=True, readable=True, help="Path to the PDF/PNG/JPG document."),
-    schema: Optional[Path] = typer.Argument(None, help="Path to a .json or .yaml schema file listing the fields to extract."),
+    schema: Path | None = typer.Argument(None, exists=True, readable=True, help="Path to a .json or .yaml schema file listing the fields to extract."),
     model: str = typer.Option("gpt-4o-mini", "--model", "-m", help="Model name, e.g. gpt-4o-mini, llama3."),
     base_url: str | None = typer.Option(None, "--base-url", help="OpenAI-compatible API base URL. Omit for OpenAI; use e.g. http://localhost:11434/v1 for Ollama."),
     api_key: str | None = typer.Option(None, "--api-key", envvar="LLM_API_KEY", help="API key. Not needed for local Ollama."),
@@ -95,10 +95,6 @@ def extract(
             "  fastdocparse extract " + str(file) + " my_schema.json",
             err=True,
         )
-        raise typer.Exit(code=1)
-
-    if not schema.exists():
-        typer.echo(f"Error: schema file not found: {schema}", err=True)
         raise typer.Exit(code=1)
 
     if kind is None and file.suffix.lower() not in SUPPORTED_EXTENSIONS:
