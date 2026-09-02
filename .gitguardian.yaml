@@ -1,0 +1,14 @@
+version: 2
+secret:
+  # This is a CLI tool whose help/error text legitimately mentions its own --api-key
+  # and --base-url flags in prose throughout src/fastdocparse/cli.py. GitGuardian's
+  # "Generic CLI Secret" detector matches `--api-key <any word>` on a single line
+  # with no understanding of context, so it repeatedly flags plain English sentences
+  # discussing the flag by name (confirmed: it has flagged "ollama", "placeholder",
+  # and even "accepts" as the mid-sentence word right after "--api-key"). This is a
+  # structural false positive for this repo, not a case-by-case one, so the whole
+  # detector is disabled here rather than playing whack-a-mole with wording. All
+  # other detectors (real credential patterns: OpenAI keys, AWS keys, etc.) stay on.
+  ignored-detectors:
+    - Generic CLI Secret
+    - generic_cli_option_secret
