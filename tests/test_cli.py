@@ -205,3 +205,37 @@ def test_schema_from_text_reports_generation_failure_cleanly(tmp_path):
     assert result.exit_code == 1
     assert "Could not generate a schema" in result.output
     assert not output_path.exists()
+
+
+def test_extract_command_missing_schema_shows_friendly_message():
+    """When schema is omitted, the user should see how to create one — not Typer's generic error."""
+    result = runner.invoke(app, ["extract", str(SAMPLE_IMAGE)])
+
+    assert result.exit_code == 1
+    assert "schema file is required" in result.output
+    assert "schema-from-text" in result.output
+    assert "list-schemas" in result.output
+
+
+def test_list_schemas_shows_bundled_schemas():
+    """list-schemas should enumerate at least the invoice.json bundled example."""
+    result = runner.invoke(app, ["list-schemas"])
+
+    assert result.exit_code == 0
+    assert "invoice" in result.output.lower()
+
+
+def test_extract_command_rejects_unreadable_schema_cleanly(tmp_path):
+    """A schema that exists but can't be read (permission denied) must fail with a clean
+    Typer-level error, not skip straight past the friendly-missing-schema path and crash
+    later with a raw OSError when the code tries to actually open it."""
+    unreadable_schema = tmp_path / "no_access.json"
+    unreadable_schema.write_text('{"name": "T", "fields": []}')
+    unreadable_schema.chmod(0o000)
+    try:
+        result = runner.invoke(app, ["extract", str(SAMPLE_IMAGE), str(unreadable_schema)])
+    finally:
+        unreadable_schema.chmod(0o644)
+
+    assert result.exit_code != 0
+    assert "readable" in result.output.lower()
