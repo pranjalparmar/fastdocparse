@@ -18,7 +18,7 @@ Most extractors give you a value and no way to know if it's real. This one tells
 
 No extra LLM call for any of this: it's deterministic, string/rule-based validation against text you already extracted.
 
-**Where it fits:** semi-structured documents with recurring fields (invoices, bills, tax forms, resumes, statements), and prose documents where *proving* a value came from the source matters (contracts, legal clauses, insurance claims). It is not a vision-LLM pipeline. It works from extracted text (digital PDF text layer, or local OCR for scans/images), which is what keeps it fast, cheap, and usable with small local models. Messy handwritten forms or complex multi-column layouts are a known weaker spot (see [document-extractor-spec.md](document-extractor-spec.md)).
+**Where it fits:** semi-structured documents with recurring fields (invoices, bills, tax forms, resumes, statements), and prose documents where *proving* a value came from the source matters (contracts, legal clauses, insurance claims). It is not a vision-LLM pipeline. It works from extracted text (digital PDF text layer, or local OCR for scans/images), which is what keeps it fast, cheap, and usable with small local models. Messy handwritten forms or complex multi-column layouts are a known weaker spot (see [docs/build-history.md](docs/build-history.md)).
 
 ## How this compares
 
@@ -121,10 +121,11 @@ print(result["invoice_number"])  # {'value': 'INV-9011', 'confidence': 'high', '
 - [Schema Guide](docs/schema-guide.md): every field option (`type`, `required`, `pattern`, `enum`, `sub_fields`, few-shot `examples`), for JSON, YAML, and plain-English authoring
 - [Output & Validation](docs/output-format.md): the full result shape, what each confidence flag means, and how to write custom cross-check rules
 - [Architecture](docs/architecture.md): diagrams of the pipeline, the module dependency graph, and where to plug in a contribution
-- [Project spec](document-extractor-spec.md): architecture, phased roadmap, honest competitive positioning
+- [Build History](docs/build-history.md): how the library was built, phase by phase, and the honest competitive positioning
+- [Roadmap](ROADMAP.md): what's planned or under discussion next
 
 Want to contribute? Start with [docs/architecture.md](docs/architecture.md) for the map, then [CONTRIBUTING.md](CONTRIBUTING.md) for the process.
 
 ## Status
 
-Core extraction, grounding, chunking, both CLI/API paths, and real packaging are implemented and tested (75 tests, `pytest -v`). Published on PyPI as [`fastdocparse`](https://pypi.org/project/fastdocparse/). `pip install fastdocparse` installs a working `fastdocparse` command and a proper `fastdocparse.*` import namespace, verified end to end with a clean-virtualenv install straight from the real public index. Not yet done: a hosted API. See [document-extractor-spec.md](document-extractor-spec.md) for the roadmap.
+Core extraction, grounding, chunking, both CLI/API paths, and real packaging are implemented and tested (83 tests, `pytest -v`). Published on PyPI as [`fastdocparse`](https://pypi.org/project/fastdocparse/). `pip install fastdocparse` installs a working `fastdocparse` command and a proper `fastdocparse.*` import namespace, verified end to end with a clean-virtualenv install straight from the real public index. Not yet done: a hosted API, a real accuracy/latency benchmark. See [ROADMAP.md](ROADMAP.md) for what's next.
