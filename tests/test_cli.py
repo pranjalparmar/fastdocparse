@@ -1,11 +1,10 @@
 """Tests for the CLI entrypoint."""
 
 import json
-import sys
+import os
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
 from typer.testing import CliRunner
 
 from fastdocparse import __version__
@@ -318,21 +317,30 @@ def test_validate_schema_rejects_unsupported_extension(tmp_path):
     assert "Unsupported schema file extension" in result.output
 
 
-@pytest.mark.skipif(
-    sys.platform == "win32",
-    reason="os.chmod cannot make files unreadable on Windows (credit: PR #59).",
-)
-def test_extract_command_rejects_unreadable_schema_cleanly(tmp_path):
+def test_extract_command_rejects_unreadable_schema_cleanly(tmp_path, monkeypatch):
     """A schema that exists but can't be read (permission denied) must fail with a clean
     Typer-level error, not skip straight past the friendly-missing-schema path and crash
-    later with a raw OSError when the code tries to actually open it."""
+    later with a raw OSError when the code tries to actually open it.
+
+    `os.access` is patched rather than the file's mode being changed: `chmod(0o000)`
+    doesn't remove the owner's read access on Windows (the permission model there is
+    ACL-based, and `chmod` only maps to the read-only attribute), so `os.access(...,
+    R_OK)`, which is what Typer's `readable=True` actually calls, still answered True
+    and the guard under test never fired. Patching the call directly exercises the same
+    code path identically on every platform, credit: PR #64 (dchaudhari7177)."""
     unreadable_schema = tmp_path / "no_access.json"
     unreadable_schema.write_text('{"name": "T", "fields": []}')
-    unreadable_schema.chmod(0o000)
-    try:
-        result = runner.invoke(app, ["extract", str(SAMPLE_IMAGE), str(unreadable_schema)])
-    finally:
-        unreadable_schema.chmod(0o644)
+
+    real_access = os.access
+
+    def deny_reading_the_schema(path, mode, *args, **kwargs):
+        if Path(path) == unreadable_schema and mode & os.R_OK:
+            return False
+        return real_access(path, mode, *args, **kwargs)
+
+    monkeypatch.setattr(os, "access", deny_reading_the_schema)
+
+    result = runner.invoke(app, ["extract", str(SAMPLE_IMAGE), str(unreadable_schema)])
 
     assert result.exit_code != 0
     assert "readable" in result.output.lower()
