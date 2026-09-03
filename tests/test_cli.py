@@ -1,9 +1,11 @@
 """Tests for the CLI entrypoint."""
 
 import json
+import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import pytest
 from typer.testing import CliRunner
 
 from fastdocparse import __version__
@@ -287,6 +289,39 @@ def test_validate_schema_invalid_json(tmp_path):
     assert "Could not load schema" in result.output
 
 
+def test_validate_schema_valid_yaml(tmp_path):
+    """validate-schema should accept .yaml/.yml, not just .json (credit: PR #59)."""
+    yaml_schema = tmp_path / "custom_schema.yaml"
+    yaml_schema.write_text(
+        "name: YamlSchema\n"
+        "fields:\n"
+        "  - name: title\n"
+        "    description: Document title\n"
+    )
+
+    result = runner.invoke(app, ["validate-schema", str(yaml_schema)])
+
+    assert result.exit_code == 0
+    assert "Schema 'YamlSchema' is valid" in result.output
+
+
+def test_validate_schema_rejects_unsupported_extension(tmp_path):
+    """validate-schema should report a clear error for an unsupported file extension,
+    not just a generic "could not load" with no reason (credit: PR #59)."""
+    txt_schema = tmp_path / "schema.txt"
+    txt_schema.write_text("{}")
+
+    result = runner.invoke(app, ["validate-schema", str(txt_schema)])
+
+    assert result.exit_code == 1
+    assert "Could not load schema" in result.output
+    assert "Unsupported schema file extension" in result.output
+
+
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="os.chmod cannot make files unreadable on Windows (credit: PR #59).",
+)
 def test_extract_command_rejects_unreadable_schema_cleanly(tmp_path):
     """A schema that exists but can't be read (permission denied) must fail with a clean
     Typer-level error, not skip straight past the friendly-missing-schema path and crash
