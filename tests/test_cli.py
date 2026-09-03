@@ -358,4 +358,7 @@ def test_extract_command_still_accepts_a_readable_schema(tmp_path):
     with patch("fastdocparse.llm_client.OpenAI", return_value=_mock_openai_returning(fake_result)):
         result = runner.invoke(app, ["extract", str(SAMPLE_IMAGE), str(schema_file), "--api-key", "test-key"])
 
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["x"]["value"] == "value"
     assert "readable" not in result.output.lower()
