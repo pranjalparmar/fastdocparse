@@ -13,6 +13,12 @@ gh pr create   # or open the PR on github.com
 
 CI (`test (3.10)`, `test (3.12)`, `build`, `Analyze (python)`) must pass before a PR can merge, and that's also enforced, not optional. Once it's green, merge the PR (squash or regular merge, your call) rather than merging locally and pushing `main` directly.
 
+## Claim an issue before starting work
+
+**Comment on the issue before you start coding**, something as simple as "I'll take this" works. Wait for a maintainer to assign it to you or give a thumbs-up before opening a PR.
+
+This isn't bureaucracy for its own sake: two people have independently opened PRs for the same issue here because neither knew the other was working on it. Both had solid work, but one submission necessarily didn't land as-is, and that's a worse outcome than a 10-second comment would have prevented. If an issue is already assigned, please pick a different one rather than opening a competing PR for it.
+
 ## Setup
 
 ```bash
@@ -27,7 +33,7 @@ pip install -e ".[dev]"
 pytest -v
 ```
 
-All 75 tests should pass before you open a PR. CI runs this automatically on every push and PR, but running it locally first saves a round-trip.
+All tests should pass before you open a PR. CI runs this automatically on every push and PR, but running it locally first saves a round-trip.
 
 ## Before opening a PR
 
