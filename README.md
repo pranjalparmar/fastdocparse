@@ -70,6 +70,9 @@ fastdocparse extract sample_invoice.png src/fastdocparse/schemas/invoice.json \
 # Or with a local model via Ollama (no API key needed):
 fastdocparse extract sample_invoice.png src/fastdocparse/schemas/invoice.json \
   --model llama3.2 --base-url http://localhost:11434/v1 --api-key ollama
+
+# Long document? Raise or lower the truncation cap explicitly:
+fastdocparse extract my_invoice.pdf my_invoice_schema.json --max-pages 5
 ```
 
 Output is JSON, printed to stdout (or saved with `--output result.json`):

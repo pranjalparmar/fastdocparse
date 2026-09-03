@@ -8,6 +8,7 @@ from typer.testing import CliRunner
 
 from fastdocparse import __version__
 from fastdocparse.cli import app
+from fastdocparse.config import ExtractionConfig
 
 runner = CliRunner()
 REPO_ROOT = Path(__file__).parent.parent
@@ -182,6 +183,32 @@ def test_extract_command_rejects_unregistered_kind_cleanly():
 
     assert result.exit_code == 1
     assert "No ingestion handler registered" in result.output
+
+
+def test_extract_command_passes_max_pages_to_document_parser():
+    fake_result = {
+        "_meta": {"truncated": False, "truncation_reason": None},
+        "invoice_number": {"value": "INV-1", "confidence": "high", "flags": ["grounded"]},
+    }
+
+    with patch("fastdocparse.cli.DocumentParser") as parser_cls, patch("fastdocparse.cli.LLMClient"):
+        parser = parser_cls.return_value
+        parser.extract.return_value = fake_result
+
+        result = runner.invoke(app, ["extract", str(SAMPLE_IMAGE), str(INVOICE_SCHEMA_PATH), "--max-pages", "5", "--api-key", "test-key"])
+
+    assert result.exit_code == 0
+    _, kwargs = parser_cls.call_args
+    assert isinstance(kwargs["config"], ExtractionConfig)
+    assert kwargs["config"].max_pages == 5
+
+
+def test_extract_command_reports_invalid_max_pages_cleanly():
+    result = runner.invoke(app, ["extract", str(SAMPLE_IMAGE), str(INVOICE_SCHEMA_PATH), "--max-pages", "0", "--api-key", "test-key"])
+
+    assert result.exit_code == 1
+    assert "max_pages must be positive" in result.output
+    assert "Traceback" not in result.output
 
 
 def test_schema_from_text_creates_missing_output_directory(tmp_path):
