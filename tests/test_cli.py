@@ -1,6 +1,7 @@
 """Tests for the CLI entrypoint."""
 
 import json
+import os
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -252,17 +253,94 @@ def test_list_schemas_shows_bundled_schemas():
     assert "invoice" in result.output.lower()
 
 
-def test_extract_command_rejects_unreadable_schema_cleanly(tmp_path):
+def test_validate_schema_valid_bundled():
+    """validate-schema should successfully validate a bundled schema and report field count."""
+    result = runner.invoke(app, ["validate-schema", str(INVOICE_SCHEMA_PATH)])
+
+    assert result.exit_code == 0
+    assert "Schema 'Invoice' is valid" in result.output
+    assert "field(s)" in result.output
+
+
+def test_validate_schema_invalid_reserved_field(tmp_path):
+    """validate-schema should reject schemas using reserved field names like _meta."""
+    bad_schema = tmp_path / "bad_schema.json"
+    bad_schema.write_text(json.dumps({
+        "name": "Bad",
+        "fields": [{"name": "_meta", "description": "reserved"}],
+    }))
+
+    result = runner.invoke(app, ["validate-schema", str(bad_schema)])
+
+    assert result.exit_code == 1
+    assert "Could not load schema" in result.output
+    assert "_meta" in result.output
+
+
+def test_validate_schema_invalid_json(tmp_path):
+    """validate-schema should report clear error for malformed json."""
+    broken_file = tmp_path / "broken.json"
+    broken_file.write_text("{not-valid-json")
+
+    result = runner.invoke(app, ["validate-schema", str(broken_file)])
+
+    assert result.exit_code == 1
+    assert "Could not load schema" in result.output
+
+
+def test_validate_schema_valid_yaml(tmp_path):
+    """validate-schema should accept .yaml/.yml, not just .json (credit: PR #59)."""
+    yaml_schema = tmp_path / "custom_schema.yaml"
+    yaml_schema.write_text(
+        "name: YamlSchema\n"
+        "fields:\n"
+        "  - name: title\n"
+        "    description: Document title\n"
+    )
+
+    result = runner.invoke(app, ["validate-schema", str(yaml_schema)])
+
+    assert result.exit_code == 0
+    assert "Schema 'YamlSchema' is valid" in result.output
+
+
+def test_validate_schema_rejects_unsupported_extension(tmp_path):
+    """validate-schema should report a clear error for an unsupported file extension,
+    not just a generic "could not load" with no reason (credit: PR #59)."""
+    txt_schema = tmp_path / "schema.txt"
+    txt_schema.write_text("{}")
+
+    result = runner.invoke(app, ["validate-schema", str(txt_schema)])
+
+    assert result.exit_code == 1
+    assert "Could not load schema" in result.output
+    assert "Unsupported schema file extension" in result.output
+
+
+def test_extract_command_rejects_unreadable_schema_cleanly(tmp_path, monkeypatch):
     """A schema that exists but can't be read (permission denied) must fail with a clean
     Typer-level error, not skip straight past the friendly-missing-schema path and crash
-    later with a raw OSError when the code tries to actually open it."""
+    later with a raw OSError when the code tries to actually open it.
+
+    `os.access` is patched rather than the file's mode being changed: `chmod(0o000)`
+    doesn't remove the owner's read access on Windows (the permission model there is
+    ACL-based, and `chmod` only maps to the read-only attribute), so `os.access(...,
+    R_OK)`, which is what Typer's `readable=True` actually calls, still answered True
+    and the guard under test never fired. Patching the call directly exercises the same
+    code path identically on every platform, credit: PR #64 (dchaudhari7177)."""
     unreadable_schema = tmp_path / "no_access.json"
     unreadable_schema.write_text('{"name": "T", "fields": []}')
-    unreadable_schema.chmod(0o000)
-    try:
-        result = runner.invoke(app, ["extract", str(SAMPLE_IMAGE), str(unreadable_schema)])
-    finally:
-        unreadable_schema.chmod(0o644)
+
+    real_access = os.access
+
+    def deny_reading_the_schema(path, mode, *args, **kwargs):
+        if Path(path) == unreadable_schema and mode & os.R_OK:
+            return False
+        return real_access(path, mode, *args, **kwargs)
+
+    monkeypatch.setattr(os, "access", deny_reading_the_schema)
+
+    result = runner.invoke(app, ["extract", str(SAMPLE_IMAGE), str(unreadable_schema)])
 
     assert result.exit_code != 0
     assert "readable" in result.output.lower()
