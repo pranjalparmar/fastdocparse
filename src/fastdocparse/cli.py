@@ -15,6 +15,7 @@ import typer
 from pydantic import ValidationError
 
 from . import __version__
+from .config import ExtractionConfig
 from .llm_client import LLMClient, LLMClientError
 from .parser import DocumentParser, EmptyDocumentError, UnknownIngestionKindError
 from .schema import Schema
@@ -107,6 +108,7 @@ def extract(
     api_key: str | None = typer.Option(None, "--api-key", envvar=["LLM_API_KEY", "OPENAI_API_KEY"], help="API key. Not needed for local Ollama."),
     output: Path | None = typer.Option(None, "--output", "-o", help="Write the JSON result to this file instead of printing it."),
     kind: str | None = typer.Option(None, "--kind", help="Override ingestion routing (e.g. 'docx' for a custom handler loaded via FASTDOCPARSE_PLUGINS). Defaults to auto-detecting pdf/image from the file extension."),
+    max_pages: int = typer.Option(15, "--max-pages", help="Maximum pages to process before truncating (default: 15)."),
 ):
     """Extract the fields defined in SCHEMA from FILE and print the result as JSON."""
     if schema is None:
@@ -137,8 +139,14 @@ def extract(
 
     _check_llm_credentials(base_url, api_key)
 
+    try:
+        config = ExtractionConfig(max_pages=max_pages)
+    except ValueError as e:
+        typer.echo(f"Extraction failed: {e}", err=True)
+        raise typer.Exit(code=1)
+
     client = LLMClient(base_url=base_url, api_key=api_key, model=model)
-    document_parser = DocumentParser(client=client)
+    document_parser = DocumentParser(client=client, config=config)
 
     is_image = file.suffix.lower() in IMAGE_EXTENSIONS
     document_bytes = file.read_bytes()
@@ -226,6 +234,25 @@ def list_schemas():
         "\nTo use one directly:\n"
         "  fastdocparse extract document.pdf " + str(schema_files[0])
     )
+
+
+@app.command(name="validate-schema")
+def validate_schema(
+    schema: Path = typer.Argument(..., exists=True, readable=True, help="Path to the .json or .yaml schema file to validate."),
+):
+    """Check that a schema file is well-formed without needing a document or LLM credentials."""
+    try:
+        doc_schema = Schema.from_file(schema)
+    except (ValidationError, ValueError, OSError) as e:
+        typer.echo(f"Could not load schema from {schema}: {e}", err=True)
+        raise typer.Exit(code=1)
+
+    fields_count = len(doc_schema.fields)
+    examples_count = len(doc_schema.examples) if doc_schema.examples else 0
+    if examples_count > 0:
+        typer.echo(f"Schema '{doc_schema.name}' is valid: {fields_count} field(s), {examples_count} example(s).")
+    else:
+        typer.echo(f"Schema '{doc_schema.name}' is valid: {fields_count} field(s).")
 
 
 if __name__ == "__main__":
