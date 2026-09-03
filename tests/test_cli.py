@@ -391,3 +391,21 @@ def test_extract_command_rejects_unreadable_schema_cleanly(tmp_path, monkeypatch
 
     assert result.exit_code != 0
     assert "readable" in result.output.lower()
+
+
+def test_extract_command_still_accepts_a_readable_schema(tmp_path):
+    """The control for the test above: the guard must fire on unreadability
+    specifically, not on every schema path handed to it. Without this, the
+    os.access patch above would pass just as happily against a check that
+    refused everything. Credit: PR #64 (dchaudhari7177)."""
+    schema_file = tmp_path / "fine.json"
+    schema_file.write_text('{"name": "T", "fields": [{"name": "x", "description": "x"}]}')
+
+    fake_result = json.dumps({"x": "value"})
+    with patch("fastdocparse.llm_client.OpenAI", return_value=_mock_openai_returning(fake_result)):
+        result = runner.invoke(app, ["extract", str(SAMPLE_IMAGE), str(schema_file), "--api-key", "test-key"])
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["x"]["value"] == "value"
+    assert "readable" not in result.output.lower()
