@@ -44,6 +44,12 @@ Not sure what's bundled or where it lives? List them from the CLI:
 fastdocparse list-schemas
 ```
 
+Want to check a schema file is well-formed before running a real extraction against it? Validate it on its own, no document or LLM credentials needed:
+
+```bash
+fastdocparse validate-schema my_schema.json
+```
+
 **Don't want to write JSON at all?** Describe what you want in plain English:
 
 ```bash
