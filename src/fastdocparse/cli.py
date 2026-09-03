@@ -220,9 +220,36 @@ def list_schemas():
         raise typer.Exit(code=1)
 
     typer.echo("Bundled example schemas (copy one as your starting point):\n")
+
+    # Load each schema rather than listing its path. A bare path tells the reader
+    # nothing about which one fits their document, so the only way to choose was
+    # to open both files -- which is the thing this command exists to save.
+    described: list[tuple[str, str]] = []
     for path in schema_files:
-        typer.echo(f"  {path}")
+        try:
+            schema = Schema.from_file(path)
+        except Exception:
+            # A bundled schema that will not parse is a packaging fault, not a
+            # reason to show nothing: the filename is still copyable, which is
+            # what this command is for.
+            described.append((path.name, ""))
+            continue
+        preview = ", ".join(f.name for f in schema.fields[:3])
+        if len(schema.fields) > 3:
+            preview += ", ..."
+        plural = "s" if len(schema.fields) != 1 else ""
+        described.append(
+            (path.name, f"{schema.name}: {preview} ({len(schema.fields)} field{plural})")
+        )
+
+    width = max(len(name) for name, _ in described)
+    for name, summary in described:
+        typer.echo(f"  {name.ljust(width)}  {summary}".rstrip())
+
+    # The directory is printed once instead of on every row: it is the same for
+    # all of them, and repeating it is what pushed the useful part off the line.
     typer.echo(
+        f"\nThey are in:\n  {schemas_dir}\n"
         "\nTo use one directly:\n"
         "  fastdocparse extract document.pdf " + str(schema_files[0])
     )
