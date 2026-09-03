@@ -2,8 +2,10 @@
 
 import json
 from pathlib import Path
+import sys
 from unittest.mock import MagicMock, patch
 
+import pytest
 from typer.testing import CliRunner
 
 from fastdocparse import __version__
@@ -225,6 +227,10 @@ def test_list_schemas_shows_bundled_schemas():
     assert "invoice" in result.output.lower()
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="os.chmod cannot make files unreadable on Windows",
+)
 def test_extract_command_rejects_unreadable_schema_cleanly(tmp_path):
     """A schema that exists but can't be read (permission denied) must fail with a clean
     Typer-level error, not skip straight past the friendly-missing-schema path and crash
@@ -239,3 +245,76 @@ def test_extract_command_rejects_unreadable_schema_cleanly(tmp_path):
 
     assert result.exit_code != 0
     assert "readable" in result.output.lower()
+
+
+def test_validate_schema_command_success():
+    result = runner.invoke(app, ["validate-schema", str(INVOICE_SCHEMA_PATH)])
+
+    assert result.exit_code == 0
+    assert result.output.strip() == "Schema 'Invoice' is valid: 9 fields, 1 examples."
+
+
+def test_validate_schema_command_success_custom_json(tmp_path):
+    schema_path = tmp_path / "custom_schema.json"
+    schema_path.write_text(json.dumps({
+        "name": "Custom",
+        "fields": [
+            {"name": "f1", "description": "field 1"},
+            {"name": "f2", "description": "field 2"},
+        ],
+    }))
+
+    result = runner.invoke(app, ["validate-schema", str(schema_path)])
+
+    assert result.exit_code == 0
+    assert result.output.strip() == "Schema 'Custom' is valid: 2 fields, 0 examples."
+
+
+def test_validate_schema_command_success_yaml(tmp_path):
+    schema_path = tmp_path / "custom_schema.yaml"
+    schema_path.write_text(
+        "name: YamlSchema\n"
+        "fields:\n"
+        "  - name: title\n"
+        "    description: Document title\n"
+    )
+
+    result = runner.invoke(app, ["validate-schema", str(schema_path)])
+
+    assert result.exit_code == 0
+    assert result.output.strip() == "Schema 'YamlSchema' is valid: 1 fields, 0 examples."
+
+
+def test_validate_schema_command_reports_bad_schema_cleanly(tmp_path):
+    bad_schema = tmp_path / "bad_schema.json"
+    bad_schema.write_text('{"name": "Bad", "fields": "not a list"}')
+
+    result = runner.invoke(app, ["validate-schema", str(bad_schema)])
+
+    assert result.exit_code == 1
+    assert "Could not load schema" in result.output
+
+
+def test_validate_schema_command_reports_reserved_field_cleanly(tmp_path):
+    meta_schema = tmp_path / "meta_schema.json"
+    meta_schema.write_text(json.dumps({
+        "name": "Reserved",
+        "fields": [{"name": "_meta", "description": "reserved name"}],
+    }))
+
+    result = runner.invoke(app, ["validate-schema", str(meta_schema)])
+
+    assert result.exit_code == 1
+    assert "Could not load schema" in result.output
+    assert "_meta" in result.output
+
+
+def test_validate_schema_command_reports_unsupported_extension_cleanly(tmp_path):
+    txt_schema = tmp_path / "schema.txt"
+    txt_schema.write_text("{}")
+
+    result = runner.invoke(app, ["validate-schema", str(txt_schema)])
+
+    assert result.exit_code == 1
+    assert "Could not load schema" in result.output
+    assert "Unsupported schema file extension" in result.output

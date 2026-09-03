@@ -44,6 +44,12 @@ Not sure what's bundled or where it lives? List them from the CLI:
 fastdocparse list-schemas
 ```
 
+Want to verify your schema file is valid before running extraction? Validate it without making any LLM calls:
+
+```bash
+fastdocparse validate-schema src/fastdocparse/schemas/invoice.json
+```
+
 **Don't want to write JSON at all?** Describe what you want in plain English:
 
 ```bash
