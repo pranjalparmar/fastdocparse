@@ -1,5 +1,6 @@
 """Tests for the CLI entrypoint."""
 
+import os
 import json
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -225,17 +226,47 @@ def test_list_schemas_shows_bundled_schemas():
     assert "invoice" in result.output.lower()
 
 
-def test_extract_command_rejects_unreadable_schema_cleanly(tmp_path):
+def test_extract_command_rejects_unreadable_schema_cleanly(tmp_path, monkeypatch):
     """A schema that exists but can't be read (permission denied) must fail with a clean
     Typer-level error, not skip straight past the friendly-missing-schema path and crash
-    later with a raw OSError when the code tries to actually open it."""
+    later with a raw OSError when the code tries to actually open it.
+
+    `os.access` is patched rather than the file's mode being changed. `chmod(0o000)`
+    does not remove the owner's read access on Windows -- the permission model is
+    ACL-based and `chmod` only maps to the read-only attribute -- so `os.access(...,
+    R_OK)` still answered True, the guard under test never fired, and the command
+    went on to fail about missing LLM credentials instead. The test was not detecting
+    a Windows bug; it could not establish its own premise there. Patching the call
+    that Typer's `readable=True` actually makes exercises the same code path
+    identically on every platform.
+    """
     unreadable_schema = tmp_path / "no_access.json"
     unreadable_schema.write_text('{"name": "T", "fields": []}')
-    unreadable_schema.chmod(0o000)
-    try:
-        result = runner.invoke(app, ["extract", str(SAMPLE_IMAGE), str(unreadable_schema)])
-    finally:
-        unreadable_schema.chmod(0o644)
+
+    real_access = os.access
+
+    def deny_reading_the_schema(path, mode, *args, **kwargs):
+        if Path(path) == unreadable_schema and mode & os.R_OK:
+            return False
+        return real_access(path, mode, *args, **kwargs)
+
+    monkeypatch.setattr(os, "access", deny_reading_the_schema)
+
+    result = runner.invoke(app, ["extract", str(SAMPLE_IMAGE), str(unreadable_schema)])
 
     assert result.exit_code != 0
     assert "readable" in result.output.lower()
+
+
+def test_extract_command_still_accepts_a_readable_schema(tmp_path):
+    """The control: the guard must fire on unreadability, not on every schema.
+
+    Without this, the test above would pass just as happily against a check that
+    refused every path handed to it.
+    """
+    schema_file = tmp_path / "fine.json"
+    schema_file.write_text('{"name": "T", "fields": [{"name": "x", "description": "x"}]}')
+
+    result = runner.invoke(app, ["extract", str(SAMPLE_IMAGE), str(schema_file)])
+
+    assert "readable" not in result.output.lower()
