@@ -225,6 +225,41 @@ def test_list_schemas_shows_bundled_schemas():
     assert "invoice" in result.output.lower()
 
 
+def test_validate_schema_valid_bundled():
+    """validate-schema should successfully validate a bundled schema and report field count."""
+    result = runner.invoke(app, ["validate-schema", str(INVOICE_SCHEMA_PATH)])
+
+    assert result.exit_code == 0
+    assert "Schema 'Invoice' is valid" in result.output
+    assert "field(s)" in result.output
+
+
+def test_validate_schema_invalid_reserved_field(tmp_path):
+    """validate-schema should reject schemas using reserved field names like _meta."""
+    bad_schema = tmp_path / "bad_schema.json"
+    bad_schema.write_text(json.dumps({
+        "name": "Bad",
+        "fields": [{"name": "_meta", "description": "reserved"}],
+    }))
+
+    result = runner.invoke(app, ["validate-schema", str(bad_schema)])
+
+    assert result.exit_code == 1
+    assert "Could not load schema" in result.output
+    assert "_meta" in result.output
+
+
+def test_validate_schema_invalid_json(tmp_path):
+    """validate-schema should report clear error for malformed json."""
+    broken_file = tmp_path / "broken.json"
+    broken_file.write_text("{not-valid-json")
+
+    result = runner.invoke(app, ["validate-schema", str(broken_file)])
+
+    assert result.exit_code == 1
+    assert "Could not load schema" in result.output
+
+
 def test_extract_command_rejects_unreadable_schema_cleanly(tmp_path):
     """A schema that exists but can't be read (permission denied) must fail with a clean
     Typer-level error, not skip straight past the friendly-missing-schema path and crash
