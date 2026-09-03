@@ -128,6 +128,7 @@ print(result["invoice_number"])  # {'value': 'INV-9011', 'confidence': 'high', '
 - [Architecture](docs/architecture.md): diagrams of the pipeline, the module dependency graph, and where to plug in a contribution
 - [Build History](docs/build-history.md): how the library was built, phase by phase, and the honest competitive positioning
 - [Roadmap](ROADMAP.md): what's planned or under discussion next
+- [Changelog](CHANGELOG.md): what changed in each release, and whether you need the upgrade
 
 Want to contribute? Start with [docs/architecture.md](docs/architecture.md) for the map, then [CONTRIBUTING.md](CONTRIBUTING.md) for the process.
 
