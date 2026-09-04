@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 from typer.testing import CliRunner
 
 from fastdocparse import __version__
-from fastdocparse.cli import app
+from fastdocparse.cli import _bundled_schema_files, app
 from fastdocparse.config import ExtractionConfig
 
 runner = CliRunner()
@@ -114,6 +114,17 @@ def test_version_flag_prints_package_version():
     assert result.exit_code == 0
     assert result.output.strip() == f"fastdocparse {__version__}"
 
+
+def test_bundled_schema_files_include_yaml_extensions(tmp_path):
+    for filename in ("invoice.json", "receipt.yaml", "shipment.yml"):
+        (tmp_path / filename).touch()
+    (tmp_path / "notes.txt").touch()
+
+    assert [path.name for path in _bundled_schema_files(tmp_path)] == [
+        "invoice.json",
+        "receipt.yaml",
+        "shipment.yml",
+    ]
 
 def test_extract_command_rejects_unsupported_extension(tmp_path):
     bad_file = tmp_path / "resume.docx"

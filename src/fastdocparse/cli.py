@@ -214,6 +214,14 @@ def schema_from_text(
     typer.echo("Review it, then run: fastdocparse extract <your_document> " + str(output))
 
 
+def _bundled_schema_files(schemas_dir: Path) -> list[Path]:
+    return sorted(
+        path
+        for pattern in ("*.json", "*.yaml", "*.yml")
+        for path in schemas_dir.glob(pattern)
+    )
+
+
 @app.command(name="list-schemas")
 def list_schemas():
     """List the bundled example schemas you can copy as a starting point.
@@ -222,7 +230,7 @@ def list_schemas():
     This is the fastest way to get started without an LLM-generated schema.
     """
     schemas_dir = Path(__file__).parent / "schemas"
-    schema_files = sorted(schemas_dir.glob("*.json"))
+    schema_files = _bundled_schema_files(schemas_dir)
     if not schema_files:
         typer.echo("No bundled schemas found.", err=True)
         raise typer.Exit(code=1)
