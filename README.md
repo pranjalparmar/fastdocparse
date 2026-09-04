@@ -130,7 +130,7 @@ print(result["invoice_number"])  # {'value': 'INV-9011', 'confidence': 'high', '
 - [Roadmap](ROADMAP.md): what's planned or under discussion next
 - [Changelog](CHANGELOG.md): what changed in each release, and whether you need the upgrade
 
-Want to contribute? Start with [docs/architecture.md](docs/architecture.md) for the map, then [CONTRIBUTING.md](CONTRIBUTING.md) for the process.
+Want to contribute? Start with [docs/architecture.md](docs/architecture.md) for the map, then [CONTRIBUTING.md](CONTRIBUTING.md) for the process. Found a security issue? See [SECURITY.md](SECURITY.md).
 
 ## Status
 
