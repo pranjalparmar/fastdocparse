@@ -8,6 +8,10 @@
 
 Extract structured data from semi-structured documents (invoices, bills, tax forms, resumes, bank statements, shipment manifests) using any OpenAI-compatible LLM (OpenAI, Ollama, vLLM, Groq, etc.), with **per-field grounding and confidence**, not just raw extraction.
 
+<p align="center">
+  <img src="branding/demo_terminal_extraction.png" alt="fastdocparse extract grounded output demo" width="800">
+</p>
+
 ## Why this, not just another parser
 
 Most extractors give you a value and no way to know if it's real. This one tells you:
