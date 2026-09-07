@@ -50,6 +50,15 @@ IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg"}
 SUPPORTED_EXTENSIONS = IMAGE_EXTENSIONS | {".pdf"}
 
 
+def _load_schema_or_exit(path: Path) -> Schema:
+    """Load a user-supplied schema, preserving the CLI's friendly error contract."""
+    try:
+        return Schema.from_file(path)
+    except (ValidationError, ValueError, OSError) as e:
+        typer.echo(f"Could not load schema from {path}: {e}", err=True)
+        raise typer.Exit(code=1)
+
+
 def _check_llm_credentials(base_url: str | None, api_key: str | None) -> None:
     """Catch the common "nothing configured" case before making any network call, rather
     than letting it surface as an OpenAI auth error after a request round-trip. A
@@ -131,11 +140,7 @@ def extract(
         typer.echo(f"Unsupported file type {file.suffix!r}. Supported: .pdf, .png, .jpg, .jpeg (or pass --kind).", err=True)
         raise typer.Exit(code=1)
 
-    try:
-        doc_schema = Schema.from_file(schema)
-    except (ValidationError, ValueError, OSError) as e:
-        typer.echo(f"Could not load schema from {schema}: {e}", err=True)
-        raise typer.Exit(code=1)
+    doc_schema = _load_schema_or_exit(schema)
 
     _check_llm_credentials(base_url, api_key)
 
@@ -276,11 +281,7 @@ def validate_schema(
     schema: Path = typer.Argument(..., exists=True, readable=True, help="Path to the .json or .yaml schema file to validate."),
 ):
     """Check that a schema file is well-formed without needing a document or LLM credentials."""
-    try:
-        doc_schema = Schema.from_file(schema)
-    except (ValidationError, ValueError, OSError) as e:
-        typer.echo(f"Could not load schema from {schema}: {e}", err=True)
-        raise typer.Exit(code=1)
+    doc_schema = _load_schema_or_exit(schema)
 
     fields_count = len(doc_schema.fields)
     examples_count = len(doc_schema.examples) if doc_schema.examples else 0
