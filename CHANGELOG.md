@@ -15,6 +15,9 @@ Dates are the PyPI upload dates, which are what a user upgrading actually sees.
 
 ### Fixed
 
+- `fastdocparse validate-schema` now pluralizes its summary properly ("1 field",
+  "3 fields, 1 example") instead of printing the literal "field(s)"/"example(s)",
+  matching what `list-schemas` already did ([#82]).
 - `test_extract_command_rejects_unreadable_schema_cleanly` could not establish its
   premise on Windows: `chmod(0o000)` does not remove the owner's read access there,
   so the guard under test never fired and the assertion compared against an
@@ -101,6 +104,7 @@ Dates are the PyPI upload dates, which are what a user upgrading actually sees.
 [#51]: https://github.com/pranjalparmar/fastdocparse/pull/51
 [#52]: https://github.com/pranjalparmar/fastdocparse/pull/52
 [#53]: https://github.com/pranjalparmar/fastdocparse/pull/53
+[#82]: https://github.com/pranjalparmar/fastdocparse/issues/82
 [#63]: https://github.com/pranjalparmar/fastdocparse/issues/63
 [Unreleased]: https://github.com/pranjalparmar/fastdocparse/compare/v0.3.0...HEAD
 [0.3.0]: https://github.com/pranjalparmar/fastdocparse/releases/tag/v0.3.0

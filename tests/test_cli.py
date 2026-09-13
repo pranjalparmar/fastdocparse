@@ -317,7 +317,27 @@ def test_validate_schema_valid_bundled():
 
     assert result.exit_code == 0
     assert "Schema 'Invoice' is valid" in result.output
-    assert "field(s)" in result.output
+    from fastdocparse.schema import Schema
+
+    fields = len(Schema.from_file(INVOICE_SCHEMA_PATH).fields)
+    assert f"{fields} fields" in result.output
+    assert "field(s)" not in result.output
+
+
+def test_validate_schema_singular_counts(tmp_path):
+    schema_file = tmp_path / "one.json"
+    schema_file.write_text(
+        json.dumps(
+            {
+                "name": "One",
+                "fields": [{"name": "x", "description": "x"}],
+                "examples": [["x is 1", {"x": "1"}]],
+            }
+        )
+    )
+    result = runner.invoke(app, ["validate-schema", str(schema_file)])
+    assert result.exit_code == 0
+    assert "1 field, 1 example." in result.output
 
 
 def test_validate_schema_invalid_reserved_field(tmp_path):
