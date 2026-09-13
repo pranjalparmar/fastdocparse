@@ -285,10 +285,15 @@ def validate_schema(
 
     fields_count = len(doc_schema.fields)
     examples_count = len(doc_schema.examples) if doc_schema.examples else 0
+    fields_plural = "s" if fields_count != 1 else ""
+    examples_plural = "s" if examples_count != 1 else ""
     if examples_count > 0:
-        typer.echo(f"Schema '{doc_schema.name}' is valid: {fields_count} field(s), {examples_count} example(s).")
+        typer.echo(
+            f"Schema '{doc_schema.name}' is valid: {fields_count} field{fields_plural}, "
+            f"{examples_count} example{examples_plural}."
+        )
     else:
-        typer.echo(f"Schema '{doc_schema.name}' is valid: {fields_count} field(s).")
+        typer.echo(f"Schema '{doc_schema.name}' is valid: {fields_count} field{fields_plural}.")
 
 
 if __name__ == "__main__":
