@@ -85,6 +85,12 @@ Options:
 | `--base-url` | OpenAI-compatible endpoint URL. Omit for real OpenAI. Also settable via `FASTDOCPARSE_BASE_URL`. | OpenAI |
 | `--api-key` | API key. Also settable via `LLM_API_KEY` or `OPENAI_API_KEY`. Any string works for local Ollama. | none |
 | `--output`, `-o` | Save the JSON result to a file instead of printing it | stdout |
+| `--max-pages` | Maximum PDF pages to process | `15` |
+| `--chunk-max-tokens` | Maximum token estimate per LLM chunk | `3000` |
+| `--pdf-render-dpi` | DPI used when rendering PDF pages for OCR | `150` |
+| `--max-image-dim` | Maximum image dimension before OCR downscaling | `1536` |
+| `--ocr-min-confidence` | OCR confidence threshold from 0 to 1 | `0.3` |
+| `--max-concurrent-chunks` | Maximum LLM chunks processed concurrently | `1` |
 
 PDF vs. image is detected automatically from the file extension.
 
@@ -183,6 +189,19 @@ from fastdocparse import ExtractionConfig
 
 config = ExtractionConfig(max_pages=10, chunk_max_tokens=4000)
 parser = DocumentParser(client=client, config=config)
+```
+
+The same tuning knobs are available from the CLI when you do not need the
+Python API, for example:
+
+```bash
+fastdocparse extract document.pdf schema.json \
+  --max-pages 10 \
+  --chunk-max-tokens 4000 \
+  --pdf-render-dpi 200 \
+  --max-image-dim 2048 \
+  --ocr-min-confidence 0.5 \
+  --max-concurrent-chunks 4
 ```
 
 ### B.6 Add support for a new document format (optional)

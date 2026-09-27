@@ -215,6 +215,70 @@ def test_extract_command_passes_max_pages_to_document_parser():
     assert kwargs["config"].max_pages == 5
 
 
+def test_extract_command_passes_all_extraction_tuning_flags():
+    fake_result = {
+        "_meta": {"truncated": False, "truncation_reason": None},
+        "invoice_number": {"value": "INV-1", "confidence": "high", "flags": ["grounded"]},
+    }
+
+    with patch("fastdocparse.cli.DocumentParser") as parser_cls, patch("fastdocparse.cli.LLMClient"):
+        parser_cls.return_value.extract.return_value = fake_result
+
+        result = runner.invoke(
+            app,
+            [
+                "extract",
+                str(SAMPLE_IMAGE),
+                str(INVOICE_SCHEMA_PATH),
+                "--max-pages",
+                "7",
+                "--chunk-max-tokens",
+                "4096",
+                "--pdf-render-dpi",
+                "200",
+                "--max-image-dim",
+                "2048",
+                "--ocr-min-confidence",
+                "0.65",
+                "--max-concurrent-chunks",
+                "4",
+                "--api-key",
+                "test-key",
+            ],
+        )
+
+    assert result.exit_code == 0
+    _, kwargs = parser_cls.call_args
+    config = kwargs["config"]
+    assert config == ExtractionConfig(
+        max_pages=7,
+        chunk_max_tokens=4096,
+        pdf_render_dpi=200,
+        max_image_dim=2048,
+        ocr_min_confidence=0.65,
+        max_concurrent_chunks=4,
+    )
+
+
+def test_extract_command_reports_invalid_ocr_confidence_cleanly():
+    result = runner.invoke(
+        app,
+        [
+            "extract",
+            str(SAMPLE_IMAGE),
+            str(INVOICE_SCHEMA_PATH),
+            "--ocr-min-confidence",
+            "2.0",
+            "--api-key",
+            "test-key",
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert "ocr_min_confidence must be between 0 and 1" in result.output
+    assert "Traceback" not in result.output
+
+
 def test_extract_command_reports_invalid_max_pages_cleanly():
     result = runner.invoke(app, ["extract", str(SAMPLE_IMAGE), str(INVOICE_SCHEMA_PATH), "--max-pages", "0", "--api-key", "test-key"])
 
