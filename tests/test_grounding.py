@@ -123,3 +123,67 @@ def test_check_substring_passes_numeric_flag_into_lists_and_dicts():
 
 def test_check_substring_passes_date_flag_into_lists():
     assert check_substring(["2021-04-22"], "Shipped 22Apr2021", date=True) is True
+
+
+@pytest.mark.parametrize(
+    "value, source",
+    [
+        ("100000", "Total 1,000.00"),
+        ("12", "1.2"),
+        ("12", "1/2"),
+        ("100", "$1,00"),
+        ("35", "3,5"),
+        ("35", "3.5"),
+        ("1,000", "1.000"),
+        ("1,2", "12"),
+    ],
+)
+def test_check_substring_rejects_digits_merged_across_punctuation(value, source):
+    assert check_substring(value, source) is False
+
+
+@pytest.mark.parametrize(
+    "value, source",
+    [
+        ("1000.00", "Total 1,000.00"),
+        ("1,000.00", "Total 1000.00"),
+        ("1000", "Total 1,000"),
+        ("1,234,567.89", "Amount 1234567.89"),
+        ("555-123-4567", "Call (555) 123-4567"),
+        ("192.168.0.1", "host 192.168.0.1 up"),
+    ],
+)
+def test_check_substring_still_tolerates_thousands_separators_and_digit_punctuation(value, source):
+    assert check_substring(value, source) is True
+
+
+@pytest.mark.parametrize(
+    "value, source",
+    [
+        ("1000_00", "Total 1,000.00"),
+        ("1_2", "Ratio 1.2"),
+    ],
+)
+def test_check_substring_literal_underscore_is_not_a_decimal_point(value, source):
+    assert check_substring(value, source) is False
+
+
+@pytest.mark.parametrize(
+    "value, source",
+    [
+        ("5551234567", "Call 555-123-4567"),
+        ("12345678", "Card 1234 5678"),
+        ("1000", "Total 1,000.00"),
+        ("1234.56", "Amount 1.234,56"),
+    ],
+)
+def test_check_substring_deliberately_flags_reformatted_digit_values(value, source):
+    """Safe-direction false alarms, kept on purpose: re-joining digit groups that the
+    source separates could match two unrelated adjacent numbers. Typed number/currency
+    fields use numeric=True, which handles these formats separately."""
+    assert check_substring(value, source) is False
+
+
+def test_check_substring_numeric_flag_unaffected_by_number_canonicalization():
+    assert check_substring(1000.0, "Total 1,000.00", numeric=True) is True
+    assert check_substring(1000.0, "Total 1,200.00", numeric=True) is False

@@ -194,16 +194,44 @@ def check_substring(value: Any, source_text: str, numeric: bool = False, date: b
                 if _parse_date_any(candidate) == target_date:
                     return True
 
-    return _matches_ignoring_punctuation(val_str, source_lower) or _matches_across_dropped_whitespace(
-        val_str, source_lower
+    value_canon = _canonicalize_numbers(val_str)
+    source_canon = _canonicalize_numbers(source_lower)
+    return _matches_ignoring_punctuation(value_canon, source_canon) or _matches_across_dropped_whitespace(
+        value_canon, source_canon
     )
+
+
+_NUMBER_TOKEN_RE = re.compile(r"\d+(?:[.,]\d+)*")
+_US_GROUPED_RE = re.compile(r"\d{1,3}(?:,\d{3})+(?:\.\d+)?")
+_DECIMAL_MARK = "\u01c2"  # a letter that never appears in real documents, so it can't collide with source text
+
+
+def _canonical_number(token: str) -> str:
+    """Rewrite one digit run with its separators resolved: US thousands commas are
+    dropped ("1,000.00" -> "1000_00"), any other "." or "," becomes a visible mark
+    ("1.2" -> "1_2", "3,5" -> "3_5", "1.000" -> "1_000"). The mark is a word character,
+    so later punctuation clean-up can't delete it and merge the digits on either side
+    ("1,000.00" must never become "100000", and "1.2" must never become "12"). It is a
+    rare Unicode letter rather than "_" so a literal underscore in the text can't pose
+    as a decimal point."""
+    if _US_GROUPED_RE.fullmatch(token):
+        whole, _, fraction = token.replace(",", "").partition(".")
+        return whole + (_DECIMAL_MARK + fraction if fraction else "")
+    return re.sub(r"[.,]", _DECIMAL_MARK, token)
+
+
+def _canonicalize_numbers(text: str) -> str:
+    return _NUMBER_TOKEN_RE.sub(lambda m: _canonical_number(m.group()), text)
 
 
 def _punctuation_variants(text: str) -> tuple[str, str]:
     """Two normalizations of text: punctuation deleted ("INV-9011" -> "inv9011") and
     punctuation turned into a separator ("INV-9011" -> "inv 9011"), whitespace collapsed
     in both. A real value can match a source under either reading."""
-    joined = re.sub(r"\s+", " ", re.sub(r"[^\w\s]", "", text)).strip()
+    # Punctuation between two digits ("1/2", "12-34") is a separator in both readings:
+    # deleting it would merge the digits into a different number.
+    between_digits = re.sub(r"(?<=\d)[^\w\s]+(?=\d)", " ", text)
+    joined = re.sub(r"\s+", " ", re.sub(r"[^\w\s]", "", between_digits)).strip()
     spaced = re.sub(r"\s+", " ", re.sub(r"[^\w\s]", " ", text)).strip()
     return joined, spaced
 
