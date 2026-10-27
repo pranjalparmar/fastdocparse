@@ -196,8 +196,10 @@ def check_substring(value: Any, source_text: str, numeric: bool = False, date: b
 
     value_canon = _canonicalize_numbers(val_str)
     source_canon = _canonicalize_numbers(source_lower)
-    return _matches_ignoring_punctuation(value_canon, source_canon) or _matches_across_dropped_whitespace(
-        value_canon, source_canon
+    return (
+        _matches_ignoring_punctuation(value_canon, source_canon)
+        or _matches_across_dropped_whitespace(value_canon, source_canon)
+        or _matches_formatted_digit_id(val_str, source_lower)
     )
 
 
@@ -385,3 +387,23 @@ def cross_check(schema: Schema, extracted: dict[str, Any], rules: list[CrossChec
             logger.exception("Cross-check rule %r raised an exception", getattr(rule, "__name__", rule))
             
     return issues
+
+
+# Phone and card numbers are routinely printed with separators the model drops. Joining
+# digit groups in general would let two unrelated adjacent numbers ground a merged value,
+# so only these recognizable layouts count: US phone (3-3-4), 16-digit card (4-4-4-4),
+# 15-digit card (4-6-5). Anything else stays a false alarm.
+_FORMATTED_DIGIT_ID_RE = re.compile(
+    r"(?<!\w)(?:"
+    r"\(?\d{3}\)?[-\s]?\d{3}[-\s]?\d{4}"
+    r"|\d{4}[-\s]\d{4}[-\s]\d{4}[-\s]\d{4}"
+    r"|\d{4}[-\s]\d{6}[-\s]\d{5}"
+    r")(?!\w)"
+)
+_FORMATTED_DIGIT_ID_LENGTHS = {10, 15, 16}
+
+
+def _matches_formatted_digit_id(value: str, source: str) -> bool:
+    if not value.isdigit() or len(value) not in _FORMATTED_DIGIT_ID_LENGTHS:
+        return False
+    return any(re.sub(r"\D", "", m.group()) == value for m in _FORMATTED_DIGIT_ID_RE.finditer(source))

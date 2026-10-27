@@ -171,8 +171,10 @@ def test_check_substring_literal_underscore_is_not_a_decimal_point(value, source
 @pytest.mark.parametrize(
     "value, source",
     [
-        ("5551234567", "Call 555-123-4567"),
         ("12345678", "Card 1234 5678"),
+        ("5551234567", "Call 5551234 567"),
+        ("5551234567", "Call 555-123-4567x"),
+        ("4111111111111111", "Card 4111 1111 1111 111"),
         ("1000", "Total 1,000.00"),
         ("1234.56", "Amount 1.234,56"),
     ],
@@ -187,3 +189,18 @@ def test_check_substring_deliberately_flags_reformatted_digit_values(value, sour
 def test_check_substring_numeric_flag_unaffected_by_number_canonicalization():
     assert check_substring(1000.0, "Total 1,000.00", numeric=True) is True
     assert check_substring(1000.0, "Total 1,200.00", numeric=True) is False
+
+
+@pytest.mark.parametrize(
+    "value, source",
+    [
+        ("5551234567", "Call 555-123-4567"),
+        ("5551234567", "Call (555) 123-4567"),
+        ("5551234567", "Call 555 123 4567 today"),
+        ("4111111111111111", "Card 4111 1111 1111 1111"),
+        ("4111111111111111", "Card 4111-1111-1111-1111."),
+        ("378282246310005", "Amex 3782 822463 10005"),
+    ],
+)
+def test_check_substring_grounds_phone_and_card_numbers_printed_with_separators(value, source):
+    assert check_substring(value, source) is True
