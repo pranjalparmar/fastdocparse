@@ -163,12 +163,12 @@ def check_substring(value: Any, source_text: str, numeric: bool = False, date: b
     if isinstance(value, list):
         if not value:
             return True
-        return all(check_substring(item, source_text) for item in value)
+        return all(check_substring(item, source_text, numeric=numeric, date=date) for item in value)
 
     if isinstance(value, dict):
         if not value:
             return True
-        return all(check_substring(v, source_text) for v in value.values())
+        return all(check_substring(v, source_text, numeric=numeric, date=date) for v in value.values())
 
     val_str = str(value).lower()
     source_lower = source_text.lower()
@@ -194,11 +194,66 @@ def check_substring(value: Any, source_text: str, numeric: bool = False, date: b
                 if _parse_date_any(candidate) == target_date:
                     return True
 
-    # Fuzzy match ignoring non-alphanumeric chars
-    val_clean = re.sub(r'\W+', '', val_str)
-    source_clean = re.sub(r'\W+', '', source_lower)
-    
-    return bool(val_clean and val_clean in source_clean)
+    return _matches_ignoring_punctuation(val_str, source_lower) or _matches_across_dropped_whitespace(
+        val_str, source_lower
+    )
+
+
+def _punctuation_variants(text: str) -> tuple[str, str]:
+    """Two normalizations of text: punctuation deleted ("INV-9011" -> "inv9011") and
+    punctuation turned into a separator ("INV-9011" -> "inv 9011"), whitespace collapsed
+    in both. A real value can match a source under either reading."""
+    joined = re.sub(r"\s+", " ", re.sub(r"[^\w\s]", "", text)).strip()
+    spaced = re.sub(r"\s+", " ", re.sub(r"[^\w\s]", " ", text)).strip()
+    return joined, spaced
+
+
+def _matches_ignoring_punctuation(value: str, source: str) -> bool:
+    """Tolerate punctuation and spacing differences ("ACME Inc" vs "ACME, Inc."), but
+    only when the match starts and ends on a token boundary. Without that, "10" would
+    ground inside "1,000.00" and "ABC" inside "A B C Industries"."""
+    for val_variant in _punctuation_variants(value):
+        if not val_variant:
+            continue
+        pattern = re.compile(r"(?<!\w)" + re.escape(val_variant) + r"(?!\w)")
+        for source_variant in _punctuation_variants(source):
+            if pattern.search(source_variant):
+                return True
+    return False
+
+
+_MIN_SQUASHED_LEN = 6
+
+
+def _matches_across_dropped_whitespace(value: str, source: str) -> bool:
+    """OCR often drops the spaces between words ("TueAug2519:06:182026"). For a
+    multi-word value that is long enough that a coincidental match is unlikely, compare
+    with all whitespace and punctuation removed, but still require the match to start
+    and end on a token edge of the original source text."""
+    if len(value.split()) < 2:
+        return False
+    value_squashed = "".join(c for c in value if c.isalnum())
+    if len(value_squashed) < _MIN_SQUASHED_LEN:
+        return False
+
+    squashed_chars: list[str] = []
+    original_index: list[int] = []
+    for i, c in enumerate(source):
+        if c.isalnum():
+            squashed_chars.append(c)
+            original_index.append(i)
+    source_squashed = "".join(squashed_chars)
+
+    start = source_squashed.find(value_squashed)
+    while start != -1:
+        first = original_index[start]
+        last = original_index[start + len(value_squashed) - 1]
+        starts_on_edge = first == 0 or not source[first - 1].isalnum()
+        ends_on_edge = last == len(source) - 1 or not source[last + 1].isalnum()
+        if starts_on_edge and ends_on_edge:
+            return True
+        start = source_squashed.find(value_squashed, start + 1)
+    return False
 
 
 def validate_field_constraints(schema: Schema, extracted: dict[str, Any]) -> list[Issue]:
