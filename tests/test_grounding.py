@@ -3,7 +3,12 @@
 import pytest
 
 from fastdocparse.config import ExtractionConfig
-from fastdocparse.grounding import Issue, date_parseable_rule, numeric_sum_rule
+from fastdocparse.grounding import (
+    Issue,
+    check_substring,
+    date_parseable_rule,
+    numeric_sum_rule,
+)
 
 
 def test_numeric_sum_rule_flags_mismatch():
@@ -70,3 +75,132 @@ def test_extraction_config_rejects_invalid_values(kwargs):
 def test_extraction_config_accepts_valid_values():
     config = ExtractionConfig(max_pages=5, chunk_max_tokens=1000, ocr_min_confidence=0.5)
     assert config.max_pages == 5
+
+
+@pytest.mark.parametrize(
+    "value, source",
+    [
+        ("10", "Total: 1,000.00"),
+        ("ABC", "A B C Industries"),
+        ("12345", "Ref 123 45 other"),
+        ("100", "Invoice 1,00,0"),
+        ("2846.25", "Total $2,486.25"),
+    ],
+)
+def test_check_substring_rejects_matches_that_straddle_tokens(value, source):
+    assert check_substring(value, source) is False
+
+
+@pytest.mark.parametrize(
+    "value, source",
+    [
+        ("INV-9011", "Invoice no. INV9011"),
+        ("INV9011", "Invoice no. INV-9011"),
+        ("INV-9011", "Invoice no. INV 9011"),
+        ("ACME Inc", "Issued by ACME, Inc."),
+        ("1234", "Order 1234 shipped"),
+        ("John Smith", "Signed: John  Smith"),
+    ],
+)
+def test_check_substring_tolerates_punctuation_and_spacing_differences(value, source):
+    assert check_substring(value, source) is True
+
+
+def test_check_substring_tolerates_ocr_that_dropped_spaces_between_words():
+    assert check_substring("Tue Aug 25 19:06:18 2026", "Photo TueAug2519:06:182026 camera 3") is True
+
+
+def test_check_substring_dropped_whitespace_still_needs_token_edges():
+    assert check_substring("Main Street", "Xmainstreet Y") is False
+    assert check_substring("Main Street", "42 MainStreet Ave") is True
+
+
+def test_check_substring_passes_numeric_flag_into_lists_and_dicts():
+    assert check_substring([1234.5, 99.0], "Totals: 1,234.50 and 99.00", numeric=True) is True
+    assert check_substring({"a": 1234.5}, "Total 1,234.50", numeric=True) is True
+    assert check_substring([1234.5, 99.0], "Totals: 1,234.50 and 98.00", numeric=True) is False
+
+
+def test_check_substring_passes_date_flag_into_lists():
+    assert check_substring(["2021-04-22"], "Shipped 22Apr2021", date=True) is True
+
+
+@pytest.mark.parametrize(
+    "value, source",
+    [
+        ("100000", "Total 1,000.00"),
+        ("12", "1.2"),
+        ("12", "1/2"),
+        ("100", "$1,00"),
+        ("35", "3,5"),
+        ("35", "3.5"),
+        ("1,000", "1.000"),
+        ("1,2", "12"),
+    ],
+)
+def test_check_substring_rejects_digits_merged_across_punctuation(value, source):
+    assert check_substring(value, source) is False
+
+
+@pytest.mark.parametrize(
+    "value, source",
+    [
+        ("1000.00", "Total 1,000.00"),
+        ("1,000.00", "Total 1000.00"),
+        ("1000", "Total 1,000"),
+        ("1,234,567.89", "Amount 1234567.89"),
+        ("555-123-4567", "Call (555) 123-4567"),
+        ("192.168.0.1", "host 192.168.0.1 up"),
+    ],
+)
+def test_check_substring_still_tolerates_thousands_separators_and_digit_punctuation(value, source):
+    assert check_substring(value, source) is True
+
+
+@pytest.mark.parametrize(
+    "value, source",
+    [
+        ("1000_00", "Total 1,000.00"),
+        ("1_2", "Ratio 1.2"),
+    ],
+)
+def test_check_substring_literal_underscore_is_not_a_decimal_point(value, source):
+    assert check_substring(value, source) is False
+
+
+@pytest.mark.parametrize(
+    "value, source",
+    [
+        ("12345678", "Card 1234 5678"),
+        ("5551234567", "Call 5551234 567"),
+        ("5551234567", "Call 555-123-4567x"),
+        ("4111111111111111", "Card 4111 1111 1111 111"),
+        ("1000", "Total 1,000.00"),
+        ("1234.56", "Amount 1.234,56"),
+    ],
+)
+def test_check_substring_deliberately_flags_reformatted_digit_values(value, source):
+    """Safe-direction false alarms, kept on purpose: re-joining digit groups that the
+    source separates could match two unrelated adjacent numbers. Typed number/currency
+    fields use numeric=True, which handles these formats separately."""
+    assert check_substring(value, source) is False
+
+
+def test_check_substring_numeric_flag_unaffected_by_number_canonicalization():
+    assert check_substring(1000.0, "Total 1,000.00", numeric=True) is True
+    assert check_substring(1000.0, "Total 1,200.00", numeric=True) is False
+
+
+@pytest.mark.parametrize(
+    "value, source",
+    [
+        ("5551234567", "Call 555-123-4567"),
+        ("5551234567", "Call (555) 123-4567"),
+        ("5551234567", "Call 555 123 4567 today"),
+        ("4111111111111111", "Card 4111 1111 1111 1111"),
+        ("4111111111111111", "Card 4111-1111-1111-1111."),
+        ("378282246310005", "Amex 3782 822463 10005"),
+    ],
+)
+def test_check_substring_grounds_phone_and_card_numbers_printed_with_separators(value, source):
+    assert check_substring(value, source) is True

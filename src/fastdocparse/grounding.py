@@ -163,12 +163,12 @@ def check_substring(value: Any, source_text: str, numeric: bool = False, date: b
     if isinstance(value, list):
         if not value:
             return True
-        return all(check_substring(item, source_text) for item in value)
+        return all(check_substring(item, source_text, numeric=numeric, date=date) for item in value)
 
     if isinstance(value, dict):
         if not value:
             return True
-        return all(check_substring(v, source_text) for v in value.values())
+        return all(check_substring(v, source_text, numeric=numeric, date=date) for v in value.values())
 
     val_str = str(value).lower()
     source_lower = source_text.lower()
@@ -194,11 +194,96 @@ def check_substring(value: Any, source_text: str, numeric: bool = False, date: b
                 if _parse_date_any(candidate) == target_date:
                     return True
 
-    # Fuzzy match ignoring non-alphanumeric chars
-    val_clean = re.sub(r'\W+', '', val_str)
-    source_clean = re.sub(r'\W+', '', source_lower)
-    
-    return bool(val_clean and val_clean in source_clean)
+    value_canon = _canonicalize_numbers(val_str)
+    source_canon = _canonicalize_numbers(source_lower)
+    return (
+        _matches_ignoring_punctuation(value_canon, source_canon)
+        or _matches_across_dropped_whitespace(value_canon, source_canon)
+        or _matches_formatted_digit_id(val_str, source_lower)
+    )
+
+
+_NUMBER_TOKEN_RE = re.compile(r"\d+(?:[.,]\d+)*")
+_US_GROUPED_RE = re.compile(r"\d{1,3}(?:,\d{3})+(?:\.\d+)?")
+_DECIMAL_MARK = "\u01c2"  # a letter that never appears in real documents, so it can't collide with source text
+
+
+def _canonical_number(token: str) -> str:
+    """Rewrite one digit run with its separators resolved: US thousands commas are
+    dropped ("1,000.00" -> "1000_00"), any other "." or "," becomes a visible mark
+    ("1.2" -> "1_2", "3,5" -> "3_5", "1.000" -> "1_000"). The mark is a word character,
+    so later punctuation clean-up can't delete it and merge the digits on either side
+    ("1,000.00" must never become "100000", and "1.2" must never become "12"). It is a
+    rare Unicode letter rather than "_" so a literal underscore in the text can't pose
+    as a decimal point."""
+    if _US_GROUPED_RE.fullmatch(token):
+        whole, _, fraction = token.replace(",", "").partition(".")
+        return whole + (_DECIMAL_MARK + fraction if fraction else "")
+    return re.sub(r"[.,]", _DECIMAL_MARK, token)
+
+
+def _canonicalize_numbers(text: str) -> str:
+    return _NUMBER_TOKEN_RE.sub(lambda m: _canonical_number(m.group()), text)
+
+
+def _punctuation_variants(text: str) -> tuple[str, str]:
+    """Two normalizations of text: punctuation deleted ("INV-9011" -> "inv9011") and
+    punctuation turned into a separator ("INV-9011" -> "inv 9011"), whitespace collapsed
+    in both. A real value can match a source under either reading."""
+    # Punctuation between two digits ("1/2", "12-34") is a separator in both readings:
+    # deleting it would merge the digits into a different number.
+    between_digits = re.sub(r"(?<=\d)[^\w\s]+(?=\d)", " ", text)
+    joined = re.sub(r"\s+", " ", re.sub(r"[^\w\s]", "", between_digits)).strip()
+    spaced = re.sub(r"\s+", " ", re.sub(r"[^\w\s]", " ", text)).strip()
+    return joined, spaced
+
+
+def _matches_ignoring_punctuation(value: str, source: str) -> bool:
+    """Tolerate punctuation and spacing differences ("ACME Inc" vs "ACME, Inc."), but
+    only when the match starts and ends on a token boundary. Without that, "10" would
+    ground inside "1,000.00" and "ABC" inside "A B C Industries"."""
+    for val_variant in _punctuation_variants(value):
+        if not val_variant:
+            continue
+        pattern = re.compile(r"(?<!\w)" + re.escape(val_variant) + r"(?!\w)")
+        for source_variant in _punctuation_variants(source):
+            if pattern.search(source_variant):
+                return True
+    return False
+
+
+_MIN_SQUASHED_LEN = 6
+
+
+def _matches_across_dropped_whitespace(value: str, source: str) -> bool:
+    """OCR often drops the spaces between words ("TueAug2519:06:182026"). For a
+    multi-word value that is long enough that a coincidental match is unlikely, compare
+    with all whitespace and punctuation removed, but still require the match to start
+    and end on a token edge of the original source text."""
+    if len(value.split()) < 2:
+        return False
+    value_squashed = "".join(c for c in value if c.isalnum())
+    if len(value_squashed) < _MIN_SQUASHED_LEN:
+        return False
+
+    squashed_chars: list[str] = []
+    original_index: list[int] = []
+    for i, c in enumerate(source):
+        if c.isalnum():
+            squashed_chars.append(c)
+            original_index.append(i)
+    source_squashed = "".join(squashed_chars)
+
+    start = source_squashed.find(value_squashed)
+    while start != -1:
+        first = original_index[start]
+        last = original_index[start + len(value_squashed) - 1]
+        starts_on_edge = first == 0 or not source[first - 1].isalnum()
+        ends_on_edge = last == len(source) - 1 or not source[last + 1].isalnum()
+        if starts_on_edge and ends_on_edge:
+            return True
+        start = source_squashed.find(value_squashed, start + 1)
+    return False
 
 
 def validate_field_constraints(schema: Schema, extracted: dict[str, Any]) -> list[Issue]:
@@ -302,3 +387,23 @@ def cross_check(schema: Schema, extracted: dict[str, Any], rules: list[CrossChec
             logger.exception("Cross-check rule %r raised an exception", getattr(rule, "__name__", rule))
             
     return issues
+
+
+# Phone and card numbers are routinely printed with separators the model drops. Joining
+# digit groups in general would let two unrelated adjacent numbers ground a merged value,
+# so only these recognizable layouts count: US phone (3-3-4), 16-digit card (4-4-4-4),
+# 15-digit card (4-6-5). Anything else stays a false alarm.
+_FORMATTED_DIGIT_ID_RE = re.compile(
+    r"(?<!\w)(?:"
+    r"\(?\d{3}\)?[-\s]?\d{3}[-\s]?\d{4}"
+    r"|\d{4}[-\s]\d{4}[-\s]\d{4}[-\s]\d{4}"
+    r"|\d{4}[-\s]\d{6}[-\s]\d{5}"
+    r")(?!\w)"
+)
+_FORMATTED_DIGIT_ID_LENGTHS = {10, 15, 16}
+
+
+def _matches_formatted_digit_id(value: str, source: str) -> bool:
+    if not value.isdigit() or len(value) not in _FORMATTED_DIGIT_ID_LENGTHS:
+        return False
+    return any(re.sub(r"\D", "", m.group()) == value for m in _FORMATTED_DIGIT_ID_RE.finditer(source))
