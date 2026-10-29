@@ -129,6 +129,7 @@ print(result["invoice_number"])  # {'value': 'INV-9011', 'confidence': 'high', '
 - [Getting Started](docs/getting-started.md): step-by-step install, CLI, and API walkthroughs
 - [Schema Guide](docs/schema-guide.md): every field option (`type`, `required`, `pattern`, `enum`, `sub_fields`, few-shot `examples`), for JSON, YAML, and plain-English authoring
 - [Output & Validation](docs/output-format.md): the full result shape, what each confidence flag means, and how to write custom cross-check rules
+- [Cookbook: Bank Statement](docs/cookbook/bank-statement.md): a worked example of a custom cross-check rule that sets `failed_check` when transactions don't add up to the stated closing balance
 - [Architecture](docs/architecture.md): diagrams of the pipeline, the module dependency graph, and where to plug in a contribution
 - [Build History](docs/build-history.md): how the library was built, phase by phase, and the honest competitive positioning
 - [Roadmap](ROADMAP.md): what's planned or under discussion next
