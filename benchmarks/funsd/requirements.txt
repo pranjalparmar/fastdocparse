@@ -1,0 +1,2 @@
+# Install fastdocparse and its runtime dependencies first.
+# FUNSD benchmarking itself uses only the project dependencies and Python stdlib.

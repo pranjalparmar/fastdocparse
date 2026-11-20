@@ -98,6 +98,64 @@ def test_scanned_pdf_ocr_fallback_processes_all_configured_pages():
     assert text == "first page text\n\nsecond page text"
 
 
+def test_pdf_ingestion_uses_structured_parse_as_extraction_text():
+    config = ExtractionConfig(ocr_min_confidence=0.55)
+    parsed_document = MagicMock()
+
+    with (
+        patch("fastdocparse.parser.parse_pdf_document", return_value=parsed_document) as parse_pdf,
+        patch(
+            "fastdocparse.parser.parsed_document_to_markdown",
+            return_value="Invoice INV-42 with enough text to avoid fallback.",
+        ) as render_markdown,
+        patch("fastdocparse.parser.extract_text_from_pdf") as legacy_text,
+    ):
+        text = _ingest_pdf(b"pdf-bytes", structured_mode=False, config=config)
+
+    parse_pdf.assert_called_once_with(
+        b"pdf-bytes",
+        max_pages=config.max_pages,
+        ocr_min_confidence=0.55,
+        ocr_scans=False,
+    )
+    render_markdown.assert_called_once_with(parsed_document, structured_mode=False)
+    legacy_text.assert_not_called()
+    assert text == "Invoice INV-42 with enough text to avoid fallback."
+
+
+def test_pdf_ingestion_uses_existing_ocr_text_path_for_scans():
+    config = ExtractionConfig(max_pages=2)
+    parsed_document = MagicMock()
+    pages = [MagicMock(png_bytes=b"scan-page")]
+
+    with (
+        patch("fastdocparse.parser.parse_pdf_document", return_value=parsed_document) as parse_pdf,
+        patch("fastdocparse.parser.parsed_document_to_markdown", return_value="") as render_markdown,
+        patch("fastdocparse.parser.extract_text_from_pdf", return_value="") as legacy_text,
+        patch("fastdocparse.parser.pdf_to_page_images", return_value=pages) as render_pages,
+        patch("fastdocparse.parser.extract_text_from_image_ocr", return_value="Established OCR text") as ocr,
+    ):
+        text = _ingest_pdf(b"scan-bytes", structured_mode=False, config=config)
+
+    parse_pdf.assert_called_once_with(
+        b"scan-bytes",
+        max_pages=config.max_pages,
+        ocr_min_confidence=config.ocr_min_confidence,
+        ocr_scans=False,
+    )
+    render_markdown.assert_called_once_with(parsed_document, structured_mode=False)
+    legacy_text.assert_called_once_with(
+        b"scan-bytes", max_pages=config.max_pages, structured_mode=False
+    )
+    render_pages.assert_called_once()
+    ocr.assert_called_once_with(
+        b"scan-page",
+        structured_mode=False,
+        min_confidence=config.ocr_min_confidence,
+    )
+    assert text == "Established OCR text"
+
+
 def test_tc1_4_different_endpoints():
     """TC1.4 - Point model= at two different endpoints."""
     # This just tests our client wrapper takes different base URLs
@@ -386,5 +444,3 @@ def test_tc5_3_truncation_flag():
         
     assert res["_meta"]["truncated"] is True
     assert "20 pages" in res["_meta"]["truncation_reason"]
-
-

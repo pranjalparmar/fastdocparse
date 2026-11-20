@@ -2,14 +2,18 @@
 
 import json
 import os
+from io import BytesIO
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import pymupdf
+from PIL import Image
 from typer.testing import CliRunner
 
 from fastdocparse import __version__
 from fastdocparse.cli import _bundled_schema_files, app
 from fastdocparse.config import ExtractionConfig
+from fastdocparse.parsing import BBox, ParsedElement
 
 runner = CliRunner()
 REPO_ROOT = Path(__file__).parent.parent
@@ -134,6 +138,98 @@ def test_extract_command_rejects_unsupported_extension(tmp_path):
 
     assert result.exit_code == 1
     assert "Unsupported file type" in result.output
+
+
+def test_inspect_command_displays_inferred_invoice_rows_and_saves_json(tmp_path):
+    invoice = REPO_ROOT / "synthetic-customs-docs" / "A10_Proforma_Differential_AT-UK.pdf"
+    if not invoice.is_file():
+        return
+    output_path = tmp_path / "parsed.json"
+
+    result = runner.invoke(app, ["inspect", str(invoice), "--output", str(output_path)])
+
+    assert result.exit_code == 0, result.output
+    assert "2 tables" not in result.output
+    assert "inferred" in result.output
+    assert "87085055" in result.output
+    assert "1.650,00" in result.output
+    assert "920,00" in result.output
+    assert "2.570,00" in result.output
+    assert output_path.is_file()
+    parsed_json = json.loads(output_path.read_text())
+    assert parsed_json["pages"][0]["elements"]
+
+
+def test_inspect_command_writes_markdown_when_output_has_md_extension(tmp_path):
+    invoice = REPO_ROOT / "synthetic-customs-docs" / "A10_Proforma_Differential_AT-UK.pdf"
+    if not invoice.is_file():
+        return
+    markdown_path = tmp_path / "invoice-parse.md"
+
+    result = runner.invoke(app, ["inspect", str(invoice), "--output", str(markdown_path)])
+
+    assert result.exit_code == 0, result.output
+    assert markdown_path.is_file()
+    markdown = markdown_path.read_text()
+    assert markdown.startswith("# Parsed document:")
+    assert "| Description | Tariff code | Currency | Price |" in markdown
+    assert "1.650,00" in markdown and "920,00" in markdown
+    assert "2.570,00" in markdown
+    assert "cell_bboxes_pt" in markdown
+    table_rows = [line for line in markdown.splitlines() if line.startswith("| ")]
+    assert len(table_rows) == 4
+    assert table_rows[2].endswith("1.650,00 |")
+    assert table_rows[3].endswith("920,00 |")
+
+
+def test_inspect_markdown_renders_image_geometry_and_caption_relation(tmp_path):
+    image_stream = BytesIO()
+    Image.new("RGB", (20, 12), "blue").save(image_stream, format="PNG")
+    pdf = pymupdf.open()
+    page = pdf.new_page(width=300, height=400)
+    page.insert_image(pymupdf.Rect(40, 100, 140, 160), stream=image_stream.getvalue())
+    page.insert_text((40, 180), "Figure 1: Sample diagram", fontsize=10)
+    pdf_path = tmp_path / "figure.pdf"
+    pdf.save(pdf_path)
+    pdf.close()
+
+    result = runner.invoke(app, ["inspect", str(pdf_path), "--format", "markdown"])
+
+    assert result.exit_code == 0, result.output
+    assert "### Figures and images" in result.output
+    assert "embedded_image" in result.output
+    assert "bbox_pt: (40.0, 100.0, 140.0, 160.0)" in result.output
+    assert "Caption: Figure 1: Sample diagram" in result.output
+    assert "### Other text" not in result.output
+
+
+def test_inspect_markdown_renders_ocr_as_compact_positioned_list(tmp_path):
+    image_stream = BytesIO()
+    Image.new("RGB", (20, 12), "white").save(image_stream, format="PNG")
+    pdf = pymupdf.open()
+    page = pdf.new_page(width=300, height=400)
+    page.insert_image(page.rect, stream=image_stream.getvalue(), keep_proportion=False)
+    pdf_path = tmp_path / "scan.pdf"
+    pdf.save(pdf_path)
+    pdf.close()
+
+    with patch(
+        "fastdocparse.parsing.pdf._ocr_page_elements",
+        return_value=[
+            ParsedElement(
+                type="text_block",
+                text="Scanned text",
+                bbox=BBox(0.1, 0.2, 0.3, 0.22),
+                source="positioned_ocr",
+            )
+        ],
+    ):
+        result = runner.invoke(app, ["inspect", str(pdf_path), "--format", "markdown"])
+
+    assert result.exit_code == 0, result.output
+    assert "### Positioned OCR lines (reading order is approximate)" in result.output
+    assert "| Y position (pt) | X range (pt) | Text | Confidence |" in result.output
+    assert "| 80.0 | 30.0–90.0 | Scanned text |  |" in result.output
 
 
 def test_extract_command_reports_bad_schema_cleanly(tmp_path):

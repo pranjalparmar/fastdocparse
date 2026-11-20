@@ -89,6 +89,31 @@ Output is JSON, printed to stdout (or saved with `--output result.json`):
 }
 ```
 
+### Inspect PDF text and tables (no LLM required)
+
+To see what the geometry-preserving PDF parser currently detects, run:
+
+```bash
+fastdocparse inspect path/to/invoice.pdf
+```
+
+It prints positioned text blocks, detected/inferred table rows, and bounding boxes in PDF points. Save the complete parsed representation as JSON with:
+
+```bash
+fastdocparse inspect path/to/invoice.pdf --output parsed.json
+```
+
+For a Markdown version that is easier to read or pass to an LLM, use an `.md` output path:
+
+```bash
+fastdocparse inspect path/to/invoice.pdf --output parsed.md
+```
+
+You can also print Markdown directly with `fastdocparse inspect path/to/invoice.pdf --format markdown`.
+Where a nearby header or clear value pattern identifies a column, the Markdown table uses labels such as `Tariff code`, `Currency`, or `Price`. Unclear columns keep generic labels rather than being guessed.
+
+Inspection preserves native text and table geometry, reports embedded image regions, and links explicitly labeled nearby figure captions when the layout is unambiguous. For image-only scanned pages, it also runs local OCR and preserves detected text positions and confidence. OCR can misread text, and this first OCR pass does not yet reconstruct scanned tables as table structures. In a source checkout, use `./venv/bin/fastdocparse inspect ...` if the project virtual environment is active at `venv/`.
+
 Don't want to write JSON at all? Describe the fields in plain English instead:
 
 ```bash

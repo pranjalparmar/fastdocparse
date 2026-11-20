@@ -1,0 +1,2460 @@
+{
+  "benchmark": "cTDaR scanned table structure baseline",
+  "dataset": "ICDAR 2019 cTDaR public training annotation repository",
+  "subset": "training/TRACKB1",
+  "documents": 30,
+  "parser": "parse_pdf_document on one-page image-only PDFs; no table recognition model",
+  "runtime": {
+    "python": "3.12.7",
+    "pymupdf": "1.28.2",
+    "rapidocr_onnxruntime": "1.4.4",
+    "shapely": "2.1.2"
+  },
+  "definitions": {
+    "table_detection": "diagnostic axis-aligned-envelope IoU at 0.50 plus cTDaR official polygon-IoU thresholds 0.6/0.7/0.8/0.9",
+    "cell_structure": "one-to-one axis-aligned-envelope IoU matching at threshold 0.50",
+    "official_track_b_structure": "reimplementation of public cTDaR evaluator: table matching at polygon IoU >= 0.8; match cells at each reported IoU; score directed horizontal/vertical adjacency relation precision and recall",
+    "grid": "cell start/end row and column spans are parsed; exact span agreement is additionally reported on geometrically matched cells",
+    "limitations": [
+      "These are public training/development annotations, not a held-out official test set",
+      "The current parser emits no scanned-table regions or cells, so Track B relation precision is undefined (no predicted relations) and recall is zero",
+      "Diagnostic envelope metrics are not the official cTDaR polygon metric"
+    ]
+  },
+  "aggregate": {
+    "table_detection_iou_0.50": {
+      "recall": 0.0,
+      "precision": 0.0,
+      "f1": 0.0,
+      "reference_tables": 35,
+      "predicted_tables": 0,
+      "matched": 0
+    },
+    "cell_envelope_iou_0.50": {
+      "recall": 0.0,
+      "precision": 0.0,
+      "f1": 0.0,
+      "reference_cells": 8975,
+      "predicted_cells": 0,
+      "matched": 0
+    },
+    "grid_span_exact_match": {
+      "matched_cells": 0,
+      "exact_span_matches": 0
+    },
+    "official_detection_by_polygon_iou": {
+      "0.6": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "matched": 0,
+        "reference": 35,
+        "prediction": 0
+      },
+      "0.7": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "matched": 0,
+        "reference": 35,
+        "prediction": 0
+      },
+      "0.8": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "matched": 0,
+        "reference": 35,
+        "prediction": 0
+      },
+      "0.9": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "matched": 0,
+        "reference": 35,
+        "prediction": 0
+      }
+    },
+    "official_structure_adjacency_relations_by_cell_iou": {
+      "0.6": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "matched_tables": 0,
+        "reference_relations": 17224,
+        "prediction_relations": 0,
+        "correct_relations": 0
+      },
+      "0.7": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "matched_tables": 0,
+        "reference_relations": 17224,
+        "prediction_relations": 0,
+        "correct_relations": 0
+      },
+      "0.8": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "matched_tables": 0,
+        "reference_relations": 17224,
+        "prediction_relations": 0,
+        "correct_relations": 0
+      },
+      "0.9": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "matched_tables": 0,
+        "reference_relations": 17224,
+        "prediction_relations": 0,
+        "correct_relations": 0
+      }
+    }
+  },
+  "per_document": [
+    {
+      "document": "cTDaR_t00039",
+      "reference_tables": 1,
+      "predicted_tables": 0,
+      "table_detection_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1
+      },
+      "reference_cells": 18,
+      "predicted_cells": 0,
+      "cell_envelope_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 18
+      },
+      "exact_grid_coordinates": {
+        "matched_cells": 0,
+        "exact_span_matches": 0,
+        "note": "Current parser output has row/column attributes but no predictions exist for scanned cTDaR images; spans are included for completeness."
+      },
+      "official_detection_counts_by_iou": {
+        "0.6": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.7": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.8": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.9": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        }
+      },
+      "official_structure_relation_counts_by_cell_iou": {
+        "0.6": {
+          "matched_tables": 0,
+          "reference_relations": 29,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.7": {
+          "matched_tables": 0,
+          "reference_relations": 29,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.8": {
+          "matched_tables": 0,
+          "reference_relations": 29,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.9": {
+          "matched_tables": 0,
+          "reference_relations": 29,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        }
+      }
+    },
+    {
+      "document": "cTDaR_t00060",
+      "reference_tables": 1,
+      "predicted_tables": 0,
+      "table_detection_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1
+      },
+      "reference_cells": 12,
+      "predicted_cells": 0,
+      "cell_envelope_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 12
+      },
+      "exact_grid_coordinates": {
+        "matched_cells": 0,
+        "exact_span_matches": 0,
+        "note": "Current parser output has row/column attributes but no predictions exist for scanned cTDaR images; spans are included for completeness."
+      },
+      "official_detection_counts_by_iou": {
+        "0.6": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.7": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.8": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.9": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        }
+      },
+      "official_structure_relation_counts_by_cell_iou": {
+        "0.6": {
+          "matched_tables": 0,
+          "reference_relations": 16,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.7": {
+          "matched_tables": 0,
+          "reference_relations": 16,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.8": {
+          "matched_tables": 0,
+          "reference_relations": 16,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.9": {
+          "matched_tables": 0,
+          "reference_relations": 16,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        }
+      }
+    },
+    {
+      "document": "cTDaR_t00100",
+      "reference_tables": 1,
+      "predicted_tables": 0,
+      "table_detection_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1
+      },
+      "reference_cells": 131,
+      "predicted_cells": 0,
+      "cell_envelope_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 131
+      },
+      "exact_grid_coordinates": {
+        "matched_cells": 0,
+        "exact_span_matches": 0,
+        "note": "Current parser output has row/column attributes but no predictions exist for scanned cTDaR images; spans are included for completeness."
+      },
+      "official_detection_counts_by_iou": {
+        "0.6": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.7": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.8": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.9": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        }
+      },
+      "official_structure_relation_counts_by_cell_iou": {
+        "0.6": {
+          "matched_tables": 0,
+          "reference_relations": 250,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.7": {
+          "matched_tables": 0,
+          "reference_relations": 250,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.8": {
+          "matched_tables": 0,
+          "reference_relations": 250,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.9": {
+          "matched_tables": 0,
+          "reference_relations": 250,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        }
+      }
+    },
+    {
+      "document": "cTDaR_t00172",
+      "reference_tables": 1,
+      "predicted_tables": 0,
+      "table_detection_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1
+      },
+      "reference_cells": 827,
+      "predicted_cells": 0,
+      "cell_envelope_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 827
+      },
+      "exact_grid_coordinates": {
+        "matched_cells": 0,
+        "exact_span_matches": 0,
+        "note": "Current parser output has row/column attributes but no predictions exist for scanned cTDaR images; spans are included for completeness."
+      },
+      "official_detection_counts_by_iou": {
+        "0.6": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.7": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.8": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.9": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        }
+      },
+      "official_structure_relation_counts_by_cell_iou": {
+        "0.6": {
+          "matched_tables": 0,
+          "reference_relations": 1635,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.7": {
+          "matched_tables": 0,
+          "reference_relations": 1635,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.8": {
+          "matched_tables": 0,
+          "reference_relations": 1635,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.9": {
+          "matched_tables": 0,
+          "reference_relations": 1635,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        }
+      }
+    },
+    {
+      "document": "cTDaR_t00177",
+      "reference_tables": 2,
+      "predicted_tables": 0,
+      "table_detection_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 2
+      },
+      "reference_cells": 84,
+      "predicted_cells": 0,
+      "cell_envelope_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 84
+      },
+      "exact_grid_coordinates": {
+        "matched_cells": 0,
+        "exact_span_matches": 0,
+        "note": "Current parser output has row/column attributes but no predictions exist for scanned cTDaR images; spans are included for completeness."
+      },
+      "official_detection_counts_by_iou": {
+        "0.6": {
+          "matched": 0,
+          "reference": 2,
+          "prediction": 0
+        },
+        "0.7": {
+          "matched": 0,
+          "reference": 2,
+          "prediction": 0
+        },
+        "0.8": {
+          "matched": 0,
+          "reference": 2,
+          "prediction": 0
+        },
+        "0.9": {
+          "matched": 0,
+          "reference": 2,
+          "prediction": 0
+        }
+      },
+      "official_structure_relation_counts_by_cell_iou": {
+        "0.6": {
+          "matched_tables": 0,
+          "reference_relations": 142,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.7": {
+          "matched_tables": 0,
+          "reference_relations": 142,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.8": {
+          "matched_tables": 0,
+          "reference_relations": 142,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.9": {
+          "matched_tables": 0,
+          "reference_relations": 142,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        }
+      }
+    },
+    {
+      "document": "cTDaR_t00247",
+      "reference_tables": 2,
+      "predicted_tables": 0,
+      "table_detection_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 2
+      },
+      "reference_cells": 236,
+      "predicted_cells": 0,
+      "cell_envelope_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 236
+      },
+      "exact_grid_coordinates": {
+        "matched_cells": 0,
+        "exact_span_matches": 0,
+        "note": "Current parser output has row/column attributes but no predictions exist for scanned cTDaR images; spans are included for completeness."
+      },
+      "official_detection_counts_by_iou": {
+        "0.6": {
+          "matched": 0,
+          "reference": 2,
+          "prediction": 0
+        },
+        "0.7": {
+          "matched": 0,
+          "reference": 2,
+          "prediction": 0
+        },
+        "0.8": {
+          "matched": 0,
+          "reference": 2,
+          "prediction": 0
+        },
+        "0.9": {
+          "matched": 0,
+          "reference": 2,
+          "prediction": 0
+        }
+      },
+      "official_structure_relation_counts_by_cell_iou": {
+        "0.6": {
+          "matched_tables": 0,
+          "reference_relations": 432,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.7": {
+          "matched_tables": 0,
+          "reference_relations": 432,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.8": {
+          "matched_tables": 0,
+          "reference_relations": 432,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.9": {
+          "matched_tables": 0,
+          "reference_relations": 432,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        }
+      }
+    },
+    {
+      "document": "cTDaR_t00255",
+      "reference_tables": 1,
+      "predicted_tables": 0,
+      "table_detection_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1
+      },
+      "reference_cells": 1336,
+      "predicted_cells": 0,
+      "cell_envelope_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1336
+      },
+      "exact_grid_coordinates": {
+        "matched_cells": 0,
+        "exact_span_matches": 0,
+        "note": "Current parser output has row/column attributes but no predictions exist for scanned cTDaR images; spans are included for completeness."
+      },
+      "official_detection_counts_by_iou": {
+        "0.6": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.7": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.8": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.9": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        }
+      },
+      "official_structure_relation_counts_by_cell_iou": {
+        "0.6": {
+          "matched_tables": 0,
+          "reference_relations": 2664,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.7": {
+          "matched_tables": 0,
+          "reference_relations": 2664,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.8": {
+          "matched_tables": 0,
+          "reference_relations": 2664,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.9": {
+          "matched_tables": 0,
+          "reference_relations": 2664,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        }
+      }
+    },
+    {
+      "document": "cTDaR_t00259",
+      "reference_tables": 1,
+      "predicted_tables": 0,
+      "table_detection_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1
+      },
+      "reference_cells": 1336,
+      "predicted_cells": 0,
+      "cell_envelope_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1336
+      },
+      "exact_grid_coordinates": {
+        "matched_cells": 0,
+        "exact_span_matches": 0,
+        "note": "Current parser output has row/column attributes but no predictions exist for scanned cTDaR images; spans are included for completeness."
+      },
+      "official_detection_counts_by_iou": {
+        "0.6": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.7": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.8": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.9": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        }
+      },
+      "official_structure_relation_counts_by_cell_iou": {
+        "0.6": {
+          "matched_tables": 0,
+          "reference_relations": 2664,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.7": {
+          "matched_tables": 0,
+          "reference_relations": 2664,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.8": {
+          "matched_tables": 0,
+          "reference_relations": 2664,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.9": {
+          "matched_tables": 0,
+          "reference_relations": 2664,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        }
+      }
+    },
+    {
+      "document": "cTDaR_t00343",
+      "reference_tables": 1,
+      "predicted_tables": 0,
+      "table_detection_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1
+      },
+      "reference_cells": 441,
+      "predicted_cells": 0,
+      "cell_envelope_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 441
+      },
+      "exact_grid_coordinates": {
+        "matched_cells": 0,
+        "exact_span_matches": 0,
+        "note": "Current parser output has row/column attributes but no predictions exist for scanned cTDaR images; spans are included for completeness."
+      },
+      "official_detection_counts_by_iou": {
+        "0.6": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.7": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.8": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.9": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        }
+      },
+      "official_structure_relation_counts_by_cell_iou": {
+        "0.6": {
+          "matched_tables": 0,
+          "reference_relations": 867,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.7": {
+          "matched_tables": 0,
+          "reference_relations": 867,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.8": {
+          "matched_tables": 0,
+          "reference_relations": 867,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.9": {
+          "matched_tables": 0,
+          "reference_relations": 867,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        }
+      }
+    },
+    {
+      "document": "cTDaR_t00394",
+      "reference_tables": 1,
+      "predicted_tables": 0,
+      "table_detection_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1
+      },
+      "reference_cells": 109,
+      "predicted_cells": 0,
+      "cell_envelope_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 109
+      },
+      "exact_grid_coordinates": {
+        "matched_cells": 0,
+        "exact_span_matches": 0,
+        "note": "Current parser output has row/column attributes but no predictions exist for scanned cTDaR images; spans are included for completeness."
+      },
+      "official_detection_counts_by_iou": {
+        "0.6": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.7": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.8": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.9": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        }
+      },
+      "official_structure_relation_counts_by_cell_iou": {
+        "0.6": {
+          "matched_tables": 0,
+          "reference_relations": 207,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.7": {
+          "matched_tables": 0,
+          "reference_relations": 207,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.8": {
+          "matched_tables": 0,
+          "reference_relations": 207,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.9": {
+          "matched_tables": 0,
+          "reference_relations": 207,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        }
+      }
+    },
+    {
+      "document": "cTDaR_t00397",
+      "reference_tables": 1,
+      "predicted_tables": 0,
+      "table_detection_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1
+      },
+      "reference_cells": 90,
+      "predicted_cells": 0,
+      "cell_envelope_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 90
+      },
+      "exact_grid_coordinates": {
+        "matched_cells": 0,
+        "exact_span_matches": 0,
+        "note": "Current parser output has row/column attributes but no predictions exist for scanned cTDaR images; spans are included for completeness."
+      },
+      "official_detection_counts_by_iou": {
+        "0.6": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.7": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.8": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.9": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        }
+      },
+      "official_structure_relation_counts_by_cell_iou": {
+        "0.6": {
+          "matched_tables": 0,
+          "reference_relations": 161,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.7": {
+          "matched_tables": 0,
+          "reference_relations": 161,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.8": {
+          "matched_tables": 0,
+          "reference_relations": 161,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.9": {
+          "matched_tables": 0,
+          "reference_relations": 161,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        }
+      }
+    },
+    {
+      "document": "cTDaR_t00404",
+      "reference_tables": 1,
+      "predicted_tables": 0,
+      "table_detection_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1
+      },
+      "reference_cells": 25,
+      "predicted_cells": 0,
+      "cell_envelope_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 25
+      },
+      "exact_grid_coordinates": {
+        "matched_cells": 0,
+        "exact_span_matches": 0,
+        "note": "Current parser output has row/column attributes but no predictions exist for scanned cTDaR images; spans are included for completeness."
+      },
+      "official_detection_counts_by_iou": {
+        "0.6": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.7": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.8": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.9": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        }
+      },
+      "official_structure_relation_counts_by_cell_iou": {
+        "0.6": {
+          "matched_tables": 0,
+          "reference_relations": 40,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.7": {
+          "matched_tables": 0,
+          "reference_relations": 40,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.8": {
+          "matched_tables": 0,
+          "reference_relations": 40,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.9": {
+          "matched_tables": 0,
+          "reference_relations": 40,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        }
+      }
+    },
+    {
+      "document": "cTDaR_t00408",
+      "reference_tables": 1,
+      "predicted_tables": 0,
+      "table_detection_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1
+      },
+      "reference_cells": 65,
+      "predicted_cells": 0,
+      "cell_envelope_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 65
+      },
+      "exact_grid_coordinates": {
+        "matched_cells": 0,
+        "exact_span_matches": 0,
+        "note": "Current parser output has row/column attributes but no predictions exist for scanned cTDaR images; spans are included for completeness."
+      },
+      "official_detection_counts_by_iou": {
+        "0.6": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.7": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.8": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.9": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        }
+      },
+      "official_structure_relation_counts_by_cell_iou": {
+        "0.6": {
+          "matched_tables": 0,
+          "reference_relations": 112,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.7": {
+          "matched_tables": 0,
+          "reference_relations": 112,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.8": {
+          "matched_tables": 0,
+          "reference_relations": 112,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.9": {
+          "matched_tables": 0,
+          "reference_relations": 112,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        }
+      }
+    },
+    {
+      "document": "cTDaR_t00430",
+      "reference_tables": 1,
+      "predicted_tables": 0,
+      "table_detection_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1
+      },
+      "reference_cells": 33,
+      "predicted_cells": 0,
+      "cell_envelope_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 33
+      },
+      "exact_grid_coordinates": {
+        "matched_cells": 0,
+        "exact_span_matches": 0,
+        "note": "Current parser output has row/column attributes but no predictions exist for scanned cTDaR images; spans are included for completeness."
+      },
+      "official_detection_counts_by_iou": {
+        "0.6": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.7": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.8": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.9": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        }
+      },
+      "official_structure_relation_counts_by_cell_iou": {
+        "0.6": {
+          "matched_tables": 0,
+          "reference_relations": 52,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.7": {
+          "matched_tables": 0,
+          "reference_relations": 52,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.8": {
+          "matched_tables": 0,
+          "reference_relations": 52,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.9": {
+          "matched_tables": 0,
+          "reference_relations": 52,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        }
+      }
+    },
+    {
+      "document": "cTDaR_t00454",
+      "reference_tables": 1,
+      "predicted_tables": 0,
+      "table_detection_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1
+      },
+      "reference_cells": 786,
+      "predicted_cells": 0,
+      "cell_envelope_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 786
+      },
+      "exact_grid_coordinates": {
+        "matched_cells": 0,
+        "exact_span_matches": 0,
+        "note": "Current parser output has row/column attributes but no predictions exist for scanned cTDaR images; spans are included for completeness."
+      },
+      "official_detection_counts_by_iou": {
+        "0.6": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.7": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.8": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.9": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        }
+      },
+      "official_structure_relation_counts_by_cell_iou": {
+        "0.6": {
+          "matched_tables": 0,
+          "reference_relations": 1531,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.7": {
+          "matched_tables": 0,
+          "reference_relations": 1531,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.8": {
+          "matched_tables": 0,
+          "reference_relations": 1531,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.9": {
+          "matched_tables": 0,
+          "reference_relations": 1531,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        }
+      }
+    },
+    {
+      "document": "cTDaR_t00456",
+      "reference_tables": 1,
+      "predicted_tables": 0,
+      "table_detection_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1
+      },
+      "reference_cells": 787,
+      "predicted_cells": 0,
+      "cell_envelope_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 787
+      },
+      "exact_grid_coordinates": {
+        "matched_cells": 0,
+        "exact_span_matches": 0,
+        "note": "Current parser output has row/column attributes but no predictions exist for scanned cTDaR images; spans are included for completeness."
+      },
+      "official_detection_counts_by_iou": {
+        "0.6": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.7": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.8": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.9": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        }
+      },
+      "official_structure_relation_counts_by_cell_iou": {
+        "0.6": {
+          "matched_tables": 0,
+          "reference_relations": 1533,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.7": {
+          "matched_tables": 0,
+          "reference_relations": 1533,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.8": {
+          "matched_tables": 0,
+          "reference_relations": 1533,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.9": {
+          "matched_tables": 0,
+          "reference_relations": 1533,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        }
+      }
+    },
+    {
+      "document": "cTDaR_t00505",
+      "reference_tables": 1,
+      "predicted_tables": 0,
+      "table_detection_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1
+      },
+      "reference_cells": 42,
+      "predicted_cells": 0,
+      "cell_envelope_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 42
+      },
+      "exact_grid_coordinates": {
+        "matched_cells": 0,
+        "exact_span_matches": 0,
+        "note": "Current parser output has row/column attributes but no predictions exist for scanned cTDaR images; spans are included for completeness."
+      },
+      "official_detection_counts_by_iou": {
+        "0.6": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.7": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.8": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.9": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        }
+      },
+      "official_structure_relation_counts_by_cell_iou": {
+        "0.6": {
+          "matched_tables": 0,
+          "reference_relations": 71,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.7": {
+          "matched_tables": 0,
+          "reference_relations": 71,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.8": {
+          "matched_tables": 0,
+          "reference_relations": 71,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.9": {
+          "matched_tables": 0,
+          "reference_relations": 71,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        }
+      }
+    },
+    {
+      "document": "cTDaR_t00509",
+      "reference_tables": 1,
+      "predicted_tables": 0,
+      "table_detection_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1
+      },
+      "reference_cells": 52,
+      "predicted_cells": 0,
+      "cell_envelope_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 52
+      },
+      "exact_grid_coordinates": {
+        "matched_cells": 0,
+        "exact_span_matches": 0,
+        "note": "Current parser output has row/column attributes but no predictions exist for scanned cTDaR images; spans are included for completeness."
+      },
+      "official_detection_counts_by_iou": {
+        "0.6": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.7": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.8": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.9": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        }
+      },
+      "official_structure_relation_counts_by_cell_iou": {
+        "0.6": {
+          "matched_tables": 0,
+          "reference_relations": 94,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.7": {
+          "matched_tables": 0,
+          "reference_relations": 94,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.8": {
+          "matched_tables": 0,
+          "reference_relations": 94,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.9": {
+          "matched_tables": 0,
+          "reference_relations": 94,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        }
+      }
+    },
+    {
+      "document": "cTDaR_t00534",
+      "reference_tables": 1,
+      "predicted_tables": 0,
+      "table_detection_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1
+      },
+      "reference_cells": 60,
+      "predicted_cells": 0,
+      "cell_envelope_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 60
+      },
+      "exact_grid_coordinates": {
+        "matched_cells": 0,
+        "exact_span_matches": 0,
+        "note": "Current parser output has row/column attributes but no predictions exist for scanned cTDaR images; spans are included for completeness."
+      },
+      "official_detection_counts_by_iou": {
+        "0.6": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.7": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.8": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.9": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        }
+      },
+      "official_structure_relation_counts_by_cell_iou": {
+        "0.6": {
+          "matched_tables": 0,
+          "reference_relations": 108,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.7": {
+          "matched_tables": 0,
+          "reference_relations": 108,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.8": {
+          "matched_tables": 0,
+          "reference_relations": 108,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.9": {
+          "matched_tables": 0,
+          "reference_relations": 108,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        }
+      }
+    },
+    {
+      "document": "cTDaR_t00568",
+      "reference_tables": 1,
+      "predicted_tables": 0,
+      "table_detection_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1
+      },
+      "reference_cells": 89,
+      "predicted_cells": 0,
+      "cell_envelope_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 89
+      },
+      "exact_grid_coordinates": {
+        "matched_cells": 0,
+        "exact_span_matches": 0,
+        "note": "Current parser output has row/column attributes but no predictions exist for scanned cTDaR images; spans are included for completeness."
+      },
+      "official_detection_counts_by_iou": {
+        "0.6": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.7": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.8": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.9": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        }
+      },
+      "official_structure_relation_counts_by_cell_iou": {
+        "0.6": {
+          "matched_tables": 0,
+          "reference_relations": 163,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.7": {
+          "matched_tables": 0,
+          "reference_relations": 163,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.8": {
+          "matched_tables": 0,
+          "reference_relations": 163,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.9": {
+          "matched_tables": 0,
+          "reference_relations": 163,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        }
+      }
+    },
+    {
+      "document": "cTDaR_t00570",
+      "reference_tables": 1,
+      "predicted_tables": 0,
+      "table_detection_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1
+      },
+      "reference_cells": 57,
+      "predicted_cells": 0,
+      "cell_envelope_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 57
+      },
+      "exact_grid_coordinates": {
+        "matched_cells": 0,
+        "exact_span_matches": 0,
+        "note": "Current parser output has row/column attributes but no predictions exist for scanned cTDaR images; spans are included for completeness."
+      },
+      "official_detection_counts_by_iou": {
+        "0.6": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.7": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.8": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.9": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        }
+      },
+      "official_structure_relation_counts_by_cell_iou": {
+        "0.6": {
+          "matched_tables": 0,
+          "reference_relations": 103,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.7": {
+          "matched_tables": 0,
+          "reference_relations": 103,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.8": {
+          "matched_tables": 0,
+          "reference_relations": 103,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.9": {
+          "matched_tables": 0,
+          "reference_relations": 103,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        }
+      }
+    },
+    {
+      "document": "cTDaR_t00604",
+      "reference_tables": 1,
+      "predicted_tables": 0,
+      "table_detection_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1
+      },
+      "reference_cells": 57,
+      "predicted_cells": 0,
+      "cell_envelope_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 57
+      },
+      "exact_grid_coordinates": {
+        "matched_cells": 0,
+        "exact_span_matches": 0,
+        "note": "Current parser output has row/column attributes but no predictions exist for scanned cTDaR images; spans are included for completeness."
+      },
+      "official_detection_counts_by_iou": {
+        "0.6": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.7": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.8": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.9": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        }
+      },
+      "official_structure_relation_counts_by_cell_iou": {
+        "0.6": {
+          "matched_tables": 0,
+          "reference_relations": 103,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.7": {
+          "matched_tables": 0,
+          "reference_relations": 103,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.8": {
+          "matched_tables": 0,
+          "reference_relations": 103,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.9": {
+          "matched_tables": 0,
+          "reference_relations": 103,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        }
+      }
+    },
+    {
+      "document": "cTDaR_t00611",
+      "reference_tables": 1,
+      "predicted_tables": 0,
+      "table_detection_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1
+      },
+      "reference_cells": 49,
+      "predicted_cells": 0,
+      "cell_envelope_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 49
+      },
+      "exact_grid_coordinates": {
+        "matched_cells": 0,
+        "exact_span_matches": 0,
+        "note": "Current parser output has row/column attributes but no predictions exist for scanned cTDaR images; spans are included for completeness."
+      },
+      "official_detection_counts_by_iou": {
+        "0.6": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.7": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.8": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.9": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        }
+      },
+      "official_structure_relation_counts_by_cell_iou": {
+        "0.6": {
+          "matched_tables": 0,
+          "reference_relations": 88,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.7": {
+          "matched_tables": 0,
+          "reference_relations": 88,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.8": {
+          "matched_tables": 0,
+          "reference_relations": 88,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.9": {
+          "matched_tables": 0,
+          "reference_relations": 88,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        }
+      }
+    },
+    {
+      "document": "cTDaR_t00617",
+      "reference_tables": 1,
+      "predicted_tables": 0,
+      "table_detection_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1
+      },
+      "reference_cells": 65,
+      "predicted_cells": 0,
+      "cell_envelope_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 65
+      },
+      "exact_grid_coordinates": {
+        "matched_cells": 0,
+        "exact_span_matches": 0,
+        "note": "Current parser output has row/column attributes but no predictions exist for scanned cTDaR images; spans are included for completeness."
+      },
+      "official_detection_counts_by_iou": {
+        "0.6": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.7": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.8": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.9": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        }
+      },
+      "official_structure_relation_counts_by_cell_iou": {
+        "0.6": {
+          "matched_tables": 0,
+          "reference_relations": 118,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.7": {
+          "matched_tables": 0,
+          "reference_relations": 118,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.8": {
+          "matched_tables": 0,
+          "reference_relations": 118,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.9": {
+          "matched_tables": 0,
+          "reference_relations": 118,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        }
+      }
+    },
+    {
+      "document": "cTDaR_t00665",
+      "reference_tables": 1,
+      "predicted_tables": 0,
+      "table_detection_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1
+      },
+      "reference_cells": 330,
+      "predicted_cells": 0,
+      "cell_envelope_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 330
+      },
+      "exact_grid_coordinates": {
+        "matched_cells": 0,
+        "exact_span_matches": 0,
+        "note": "Current parser output has row/column attributes but no predictions exist for scanned cTDaR images; spans are included for completeness."
+      },
+      "official_detection_counts_by_iou": {
+        "0.6": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.7": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.8": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.9": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        }
+      },
+      "official_structure_relation_counts_by_cell_iou": {
+        "0.6": {
+          "matched_tables": 0,
+          "reference_relations": 617,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.7": {
+          "matched_tables": 0,
+          "reference_relations": 617,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.8": {
+          "matched_tables": 0,
+          "reference_relations": 617,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.9": {
+          "matched_tables": 0,
+          "reference_relations": 617,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        }
+      }
+    },
+    {
+      "document": "cTDaR_t00710",
+      "reference_tables": 3,
+      "predicted_tables": 0,
+      "table_detection_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 3
+      },
+      "reference_cells": 448,
+      "predicted_cells": 0,
+      "cell_envelope_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 448
+      },
+      "exact_grid_coordinates": {
+        "matched_cells": 0,
+        "exact_span_matches": 0,
+        "note": "Current parser output has row/column attributes but no predictions exist for scanned cTDaR images; spans are included for completeness."
+      },
+      "official_detection_counts_by_iou": {
+        "0.6": {
+          "matched": 0,
+          "reference": 3,
+          "prediction": 0
+        },
+        "0.7": {
+          "matched": 0,
+          "reference": 3,
+          "prediction": 0
+        },
+        "0.8": {
+          "matched": 0,
+          "reference": 3,
+          "prediction": 0
+        },
+        "0.9": {
+          "matched": 0,
+          "reference": 3,
+          "prediction": 0
+        }
+      },
+      "official_structure_relation_counts_by_cell_iou": {
+        "0.6": {
+          "matched_tables": 0,
+          "reference_relations": 804,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.7": {
+          "matched_tables": 0,
+          "reference_relations": 804,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.8": {
+          "matched_tables": 0,
+          "reference_relations": 804,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.9": {
+          "matched_tables": 0,
+          "reference_relations": 804,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        }
+      }
+    },
+    {
+      "document": "cTDaR_t00802",
+      "reference_tables": 1,
+      "predicted_tables": 0,
+      "table_detection_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1
+      },
+      "reference_cells": 654,
+      "predicted_cells": 0,
+      "cell_envelope_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 654
+      },
+      "exact_grid_coordinates": {
+        "matched_cells": 0,
+        "exact_span_matches": 0,
+        "note": "Current parser output has row/column attributes but no predictions exist for scanned cTDaR images; spans are included for completeness."
+      },
+      "official_detection_counts_by_iou": {
+        "0.6": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.7": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.8": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.9": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        }
+      },
+      "official_structure_relation_counts_by_cell_iou": {
+        "0.6": {
+          "matched_tables": 0,
+          "reference_relations": 1302,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.7": {
+          "matched_tables": 0,
+          "reference_relations": 1302,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.8": {
+          "matched_tables": 0,
+          "reference_relations": 1302,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.9": {
+          "matched_tables": 0,
+          "reference_relations": 1302,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        }
+      }
+    },
+    {
+      "document": "cTDaR_t00821",
+      "reference_tables": 2,
+      "predicted_tables": 0,
+      "table_detection_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 2
+      },
+      "reference_cells": 612,
+      "predicted_cells": 0,
+      "cell_envelope_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 612
+      },
+      "exact_grid_coordinates": {
+        "matched_cells": 0,
+        "exact_span_matches": 0,
+        "note": "Current parser output has row/column attributes but no predictions exist for scanned cTDaR images; spans are included for completeness."
+      },
+      "official_detection_counts_by_iou": {
+        "0.6": {
+          "matched": 0,
+          "reference": 2,
+          "prediction": 0
+        },
+        "0.7": {
+          "matched": 0,
+          "reference": 2,
+          "prediction": 0
+        },
+        "0.8": {
+          "matched": 0,
+          "reference": 2,
+          "prediction": 0
+        },
+        "0.9": {
+          "matched": 0,
+          "reference": 2,
+          "prediction": 0
+        }
+      },
+      "official_structure_relation_counts_by_cell_iou": {
+        "0.6": {
+          "matched_tables": 0,
+          "reference_relations": 1066,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.7": {
+          "matched_tables": 0,
+          "reference_relations": 1066,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.8": {
+          "matched_tables": 0,
+          "reference_relations": 1066,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.9": {
+          "matched_tables": 0,
+          "reference_relations": 1066,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        }
+      }
+    },
+    {
+      "document": "cTDaR_t00905",
+      "reference_tables": 1,
+      "predicted_tables": 0,
+      "table_detection_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1
+      },
+      "reference_cells": 96,
+      "predicted_cells": 0,
+      "cell_envelope_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 96
+      },
+      "exact_grid_coordinates": {
+        "matched_cells": 0,
+        "exact_span_matches": 0,
+        "note": "Current parser output has row/column attributes but no predictions exist for scanned cTDaR images; spans are included for completeness."
+      },
+      "official_detection_counts_by_iou": {
+        "0.6": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.7": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.8": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.9": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        }
+      },
+      "official_structure_relation_counts_by_cell_iou": {
+        "0.6": {
+          "matched_tables": 0,
+          "reference_relations": 170,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.7": {
+          "matched_tables": 0,
+          "reference_relations": 170,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.8": {
+          "matched_tables": 0,
+          "reference_relations": 170,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.9": {
+          "matched_tables": 0,
+          "reference_relations": 170,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        }
+      }
+    },
+    {
+      "document": "cTDaR_t00907",
+      "reference_tables": 1,
+      "predicted_tables": 0,
+      "table_detection_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 1
+      },
+      "reference_cells": 48,
+      "predicted_cells": 0,
+      "cell_envelope_iou_0.50": {
+        "iou_threshold": 0.5,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "true_positive": 0,
+        "false_positive": 0,
+        "false_negative": 48
+      },
+      "exact_grid_coordinates": {
+        "matched_cells": 0,
+        "exact_span_matches": 0,
+        "note": "Current parser output has row/column attributes but no predictions exist for scanned cTDaR images; spans are included for completeness."
+      },
+      "official_detection_counts_by_iou": {
+        "0.6": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.7": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.8": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        },
+        "0.9": {
+          "matched": 0,
+          "reference": 1,
+          "prediction": 0
+        }
+      },
+      "official_structure_relation_counts_by_cell_iou": {
+        "0.6": {
+          "matched_tables": 0,
+          "reference_relations": 82,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.7": {
+          "matched_tables": 0,
+          "reference_relations": 82,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.8": {
+          "matched_tables": 0,
+          "reference_relations": 82,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        },
+        "0.9": {
+          "matched_tables": 0,
+          "reference_relations": 82,
+          "prediction_relations": 0,
+          "correct_relations": 0
+        }
+      }
+    }
+  ]
+}

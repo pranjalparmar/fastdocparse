@@ -24,6 +24,7 @@ from .json_repair import parse_json_from_llm as _parse_json_from_llm
 from .llm_client import LLMClient
 from .ocr_engine import extract_text_from_image_ocr
 from .pdf_utils import chunk_document_text, extract_text_from_pdf, pdf_to_page_images
+from .parsing import parse_pdf_document, parsed_document_to_markdown
 from .prompt_compiler import compile_prompt
 from .schema import Schema
 
@@ -103,11 +104,30 @@ def _merge_extracted_data(results: list[dict[str, Any]], chunks: list[str], sche
 # (e.g. DOCX), add a handler here and register it — no changes needed to
 # DocumentParser itself.
 def _ingest_pdf(document_bytes: bytes, structured_mode: bool, config: ExtractionConfig) -> str:
-    doc_text = extract_text_from_pdf(document_bytes, max_pages=config.max_pages, structured_mode=structured_mode)
+    # Prefer the geometry-preserving parse as the source of extraction text. The
+    # renderer is only a view: positions, sources, confidence, and table cells remain
+    # available in the ParsedDocument for future evidence-aware extraction.
+    parsed_document = parse_pdf_document(
+        document_bytes,
+        max_pages=config.max_pages,
+        ocr_min_confidence=config.ocr_min_confidence,
+        ocr_scans=False,
+    )
+    doc_text = parsed_document_to_markdown(parsed_document, structured_mode=structured_mode)
+    # Use the established ingestion/OCR route for scans. Its text grouping differs
+    # from positioned OCR, and combining both OCR passes would duplicate content.
+    if len(doc_text.strip()) < 30:
+        # Preserve the existing text/OCR path as a fallback for PDFs the structured
+        # adapter cannot parse, or whose parse contains too little usable text.
+        doc_text = extract_text_from_pdf(
+            document_bytes,
+            max_pages=config.max_pages,
+            structured_mode=structured_mode,
+        )
     if len(doc_text.strip()) < 30:
         # Scanned PDF: render and OCR the same configured page range as digital PDFs.
         logger.info(
-            "Digital text layer too short (%d chars); falling back to OCR on up to %d pages.",
+            "PDF text too short (%d chars); falling back to OCR on up to %d pages.",
             len(doc_text.strip()),
             config.max_pages,
         )

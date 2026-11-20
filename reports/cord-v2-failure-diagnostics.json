@@ -1,0 +1,314 @@
+{
+  "benchmark": "CORD v2 test failure diagnostic",
+  "split": "test",
+  "sample_selection": {
+    "strategy": "up to five each from highest per-document CER, lowest line F1, and highest line F1; deterministic ranking from the saved full test benchmark",
+    "strata": {
+      "highest_cer": [
+        "0098",
+        "0068",
+        "0054",
+        "0076",
+        "0038"
+      ],
+      "lowest_line_f1": [
+        "0039",
+        "0054",
+        "0068",
+        "0076",
+        "0093"
+      ],
+      "highest_line_f1": [
+        "0077",
+        "0064",
+        "0062",
+        "0015",
+        "0043"
+      ]
+    },
+    "unique_documents": 12
+  },
+  "category_document_counts": {
+    "recognition_errors_on_spatially_matched_lines": 2,
+    "loose_box_localization": 3,
+    "possible_line_splitting_or_fragmentation": 3,
+    "possible_line_merging_or_over-grouping": 7,
+    "over-detection_or_excessive_line-splitting": 4,
+    "under-detection_or_excessive_line_merging": 8
+  },
+  "sample_aggregate": {
+    "reference_lines": 140,
+    "predicted_lines": 98,
+    "matched_lines": 39,
+    "mean_of_document_mean_matched_iou": 0.8766562066060355,
+    "mean_of_document_mean_matched_line_cer": 0.08797309753379362,
+    "mean_of_document_mean_matched_ocr_confidence": 0.9476116780816286,
+    "mean_of_document_mean_unmatched_ocr_confidence": 0.936491183498842,
+    "note": "Averages are macro over selected documents, not all 100 receipts."
+  },
+  "diagnostic_thresholds": {
+    "spatial_match_iou": 0.5,
+    "poor_matched_text_error_rate": 0.25,
+    "loose_localization_iou_range": "0.50 <= IoU < 0.75",
+    "split_merge_coverage_threshold": 0.15,
+    "split_merge_minimum_union_coverage": 0.65,
+    "note": "split/merge categories are geometric heuristics for manual triage, not ground-truth labels"
+  },
+  "per_document": {
+    "0098": {
+      "reference_lines": 13,
+      "predicted_lines": 21,
+      "line_f1_iou_0.50": 0.11764705882352941,
+      "cer_iou_0.50": 2.8028169014084505,
+      "matched_lines": 2,
+      "matched_lines_with_text_error_over_25_percent": 1,
+      "matched_lines_with_iou_0.50_to_0.75": 1,
+      "reference_lines_missed": 11,
+      "predicted_lines_unmatched": 19,
+      "possible_split_lines_among_misses": 9,
+      "possible_merged_lines_among_unmatched_predictions": 3,
+      "mean_matched_iou": 0.7456278541852439,
+      "mean_matched_line_cer": 0.3333333333333333,
+      "mean_matched_ocr_confidence": 0.9818152263760567,
+      "mean_unmatched_ocr_confidence": 0.9656056744954951,
+      "diagnostic_categories": [
+        "recognition_errors_on_spatially_matched_lines",
+        "loose_box_localization",
+        "possible_line_splitting_or_fragmentation",
+        "possible_line_merging_or_over-grouping",
+        "over-detection_or_excessive_line-splitting"
+      ]
+    },
+    "0068": {
+      "reference_lines": 5,
+      "predicted_lines": 7,
+      "line_f1_iou_0.50": 0.0,
+      "cer_iou_0.50": 2.0,
+      "matched_lines": 0,
+      "matched_lines_with_text_error_over_25_percent": 0,
+      "matched_lines_with_iou_0.50_to_0.75": 0,
+      "reference_lines_missed": 5,
+      "predicted_lines_unmatched": 7,
+      "possible_split_lines_among_misses": 2,
+      "possible_merged_lines_among_unmatched_predictions": 7,
+      "mean_matched_iou": null,
+      "mean_matched_line_cer": null,
+      "mean_matched_ocr_confidence": null,
+      "mean_unmatched_ocr_confidence": 0.9417204225549892,
+      "diagnostic_categories": [
+        "possible_line_splitting_or_fragmentation",
+        "possible_line_merging_or_over-grouping",
+        "over-detection_or_excessive_line-splitting"
+      ]
+    },
+    "0054": {
+      "reference_lines": 5,
+      "predicted_lines": 8,
+      "line_f1_iou_0.50": 0.0,
+      "cer_iou_0.50": 1.9821428571428572,
+      "matched_lines": 0,
+      "matched_lines_with_text_error_over_25_percent": 0,
+      "matched_lines_with_iou_0.50_to_0.75": 0,
+      "reference_lines_missed": 5,
+      "predicted_lines_unmatched": 8,
+      "possible_split_lines_among_misses": 0,
+      "possible_merged_lines_among_unmatched_predictions": 5,
+      "mean_matched_iou": null,
+      "mean_matched_line_cer": null,
+      "mean_matched_ocr_confidence": null,
+      "mean_unmatched_ocr_confidence": 0.9704390469317635,
+      "diagnostic_categories": [
+        "possible_line_merging_or_over-grouping",
+        "over-detection_or_excessive_line-splitting"
+      ]
+    },
+    "0076": {
+      "reference_lines": 12,
+      "predicted_lines": 8,
+      "line_f1_iou_0.50": 0.1,
+      "cer_iou_0.50": 1.839080459770115,
+      "matched_lines": 1,
+      "matched_lines_with_text_error_over_25_percent": 0,
+      "matched_lines_with_iou_0.50_to_0.75": 0,
+      "reference_lines_missed": 11,
+      "predicted_lines_unmatched": 7,
+      "possible_split_lines_among_misses": 0,
+      "possible_merged_lines_among_unmatched_predictions": 5,
+      "mean_matched_iou": 0.7502982313363846,
+      "mean_matched_line_cer": 0.1111111111111111,
+      "mean_matched_ocr_confidence": 0.8365262250105541,
+      "mean_unmatched_ocr_confidence": 0.9427213556811113,
+      "diagnostic_categories": [
+        "possible_line_merging_or_over-grouping",
+        "under-detection_or_excessive_line_merging"
+      ]
+    },
+    "0038": {
+      "reference_lines": 32,
+      "predicted_lines": 11,
+      "line_f1_iou_0.50": 0.13953488372093023,
+      "cer_iou_0.50": 1.680672268907563,
+      "matched_lines": 3,
+      "matched_lines_with_text_error_over_25_percent": 0,
+      "matched_lines_with_iou_0.50_to_0.75": 0,
+      "reference_lines_missed": 29,
+      "predicted_lines_unmatched": 8,
+      "possible_split_lines_among_misses": 12,
+      "possible_merged_lines_among_unmatched_predictions": 7,
+      "mean_matched_iou": 0.9442906685995202,
+      "mean_matched_line_cer": 0.03333333333333333,
+      "mean_matched_ocr_confidence": 0.9509886775697981,
+      "mean_unmatched_ocr_confidence": 0.9620189118132321,
+      "diagnostic_categories": [
+        "possible_line_splitting_or_fragmentation",
+        "possible_line_merging_or_over-grouping",
+        "under-detection_or_excessive_line_merging"
+      ]
+    },
+    "0039": {
+      "reference_lines": 24,
+      "predicted_lines": 1,
+      "line_f1_iou_0.50": 0.0,
+      "cer_iou_0.50": 1.03859649122807,
+      "matched_lines": 0,
+      "matched_lines_with_text_error_over_25_percent": 0,
+      "matched_lines_with_iou_0.50_to_0.75": 0,
+      "reference_lines_missed": 24,
+      "predicted_lines_unmatched": 1,
+      "possible_split_lines_among_misses": 0,
+      "possible_merged_lines_among_unmatched_predictions": 0,
+      "mean_matched_iou": null,
+      "mean_matched_line_cer": null,
+      "mean_matched_ocr_confidence": null,
+      "mean_unmatched_ocr_confidence": 0.8492760387333956,
+      "diagnostic_categories": [
+        "under-detection_or_excessive_line_merging"
+      ]
+    },
+    "0093": {
+      "reference_lines": 8,
+      "predicted_lines": 9,
+      "line_f1_iou_0.50": 0.11764705882352941,
+      "cer_iou_0.50": 1.59375,
+      "matched_lines": 1,
+      "matched_lines_with_text_error_over_25_percent": 0,
+      "matched_lines_with_iou_0.50_to_0.75": 0,
+      "reference_lines_missed": 7,
+      "predicted_lines_unmatched": 8,
+      "possible_split_lines_among_misses": 0,
+      "possible_merged_lines_among_unmatched_predictions": 6,
+      "mean_matched_iou": 0.9622449822894293,
+      "mean_matched_line_cer": 0.0,
+      "mean_matched_ocr_confidence": 0.9137570682693931,
+      "mean_unmatched_ocr_confidence": 0.9234591997181526,
+      "diagnostic_categories": [
+        "possible_line_merging_or_over-grouping",
+        "over-detection_or_excessive_line-splitting"
+      ]
+    },
+    "0077": {
+      "reference_lines": 8,
+      "predicted_lines": 7,
+      "line_f1_iou_0.50": 0.9333333333333333,
+      "cer_iou_0.50": 0.0851063829787234,
+      "matched_lines": 7,
+      "matched_lines_with_text_error_over_25_percent": 0,
+      "matched_lines_with_iou_0.50_to_0.75": 1,
+      "reference_lines_missed": 1,
+      "predicted_lines_unmatched": 0,
+      "possible_split_lines_among_misses": 0,
+      "possible_merged_lines_among_unmatched_predictions": 0,
+      "mean_matched_iou": 0.8833837917863122,
+      "mean_matched_line_cer": 0.06040249433106576,
+      "mean_matched_ocr_confidence": 0.9659512588891729,
+      "mean_unmatched_ocr_confidence": null,
+      "diagnostic_categories": [
+        "loose_box_localization",
+        "under-detection_or_excessive_line_merging"
+      ]
+    },
+    "0064": {
+      "reference_lines": 5,
+      "predicted_lines": 4,
+      "line_f1_iou_0.50": 0.888888888888889,
+      "cer_iou_0.50": 0.25,
+      "matched_lines": 4,
+      "matched_lines_with_text_error_over_25_percent": 1,
+      "matched_lines_with_iou_0.50_to_0.75": 1,
+      "reference_lines_missed": 1,
+      "predicted_lines_unmatched": 0,
+      "possible_split_lines_among_misses": 0,
+      "possible_merged_lines_among_unmatched_predictions": 0,
+      "mean_matched_iou": 0.8583840097880066,
+      "mean_matched_line_cer": 0.16666666666666666,
+      "mean_matched_ocr_confidence": 0.9821212492883206,
+      "mean_unmatched_ocr_confidence": null,
+      "diagnostic_categories": [
+        "recognition_errors_on_spatially_matched_lines",
+        "loose_box_localization",
+        "under-detection_or_excessive_line_merging"
+      ]
+    },
+    "0062": {
+      "reference_lines": 9,
+      "predicted_lines": 7,
+      "line_f1_iou_0.50": 0.8750000000000001,
+      "cer_iou_0.50": 0.0821917808219178,
+      "matched_lines": 7,
+      "matched_lines_with_text_error_over_25_percent": 0,
+      "matched_lines_with_iou_0.50_to_0.75": 0,
+      "reference_lines_missed": 2,
+      "predicted_lines_unmatched": 0,
+      "possible_split_lines_among_misses": 0,
+      "possible_merged_lines_among_unmatched_predictions": 0,
+      "mean_matched_iou": 0.944542137592083,
+      "mean_matched_line_cer": 0.052230507587650445,
+      "mean_matched_ocr_confidence": 0.970745181454485,
+      "mean_unmatched_ocr_confidence": null,
+      "diagnostic_categories": [
+        "under-detection_or_excessive_line_merging"
+      ]
+    },
+    "0015": {
+      "reference_lines": 9,
+      "predicted_lines": 7,
+      "line_f1_iou_0.50": 0.8750000000000001,
+      "cer_iou_0.50": 0.02631578947368421,
+      "matched_lines": 7,
+      "matched_lines_with_text_error_over_25_percent": 0,
+      "matched_lines_with_iou_0.50_to_0.75": 0,
+      "reference_lines_missed": 2,
+      "predicted_lines_unmatched": 0,
+      "possible_split_lines_among_misses": 0,
+      "possible_merged_lines_among_unmatched_predictions": 0,
+      "mean_matched_iou": 0.8879193641937165,
+      "mean_matched_line_cer": 0.0,
+      "mean_matched_ocr_confidence": 0.9771684223673907,
+      "mean_unmatched_ocr_confidence": null,
+      "diagnostic_categories": [
+        "under-detection_or_excessive_line_merging"
+      ]
+    },
+    "0043": {
+      "reference_lines": 10,
+      "predicted_lines": 8,
+      "line_f1_iou_0.50": 0.7777777777777777,
+      "cer_iou_0.50": 0.32571428571428573,
+      "matched_lines": 7,
+      "matched_lines_with_text_error_over_25_percent": 0,
+      "matched_lines_with_iou_0.50_to_0.75": 0,
+      "reference_lines_missed": 3,
+      "predicted_lines_unmatched": 1,
+      "possible_split_lines_among_misses": 0,
+      "possible_merged_lines_among_unmatched_predictions": 1,
+      "mean_matched_iou": 0.9132148196836231,
+      "mean_matched_line_cer": 0.034680431440982006,
+      "mean_matched_ocr_confidence": 0.9494317935094867,
+      "mean_unmatched_ocr_confidence": 0.9366888180625961,
+      "diagnostic_categories": [
+        "possible_line_merging_or_over-grouping",
+        "under-detection_or_excessive_line_merging"
+      ]
+    }
+  }
+}

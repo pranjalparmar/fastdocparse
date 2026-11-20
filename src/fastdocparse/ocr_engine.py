@@ -67,8 +67,7 @@ def extract_text_from_image_ocr(image_bytes: bytes, structured_mode: bool = Fals
         buf = io.BytesIO()
         img.save(buf, format="JPEG")
 
-        with _ocr_lock:
-            result, _ = rapid_ocr(buf.getvalue())
+        result = _run_rapid_ocr(rapid_ocr, buf.getvalue())
         if not result:
             return ""
 
@@ -107,3 +106,68 @@ def extract_text_from_image_ocr(image_bytes: bytes, structured_mode: bool = Fals
         return "\n".join(grouped_lines)
     except (OSError, RuntimeError, TypeError, ValueError):
         return ""
+
+
+def extract_positioned_text_from_image_ocr(
+    image_bytes: bytes,
+    min_confidence: float = 0.3,
+) -> list[tuple[str, tuple[float, float, float, float], float]]:
+    """Return OCR text, pixel-space boxes, and confidence for an image.
+
+    Unlike :func:`extract_text_from_image_ocr`, this keeps each OCR detection's
+    geometry so PDF adapters can map it back onto the source page. Coordinates use
+    the raster image passed to RapidOCR, in pixels with a top-left origin.
+    """
+    if not HAS_RAPID_OCR:
+        return []
+
+    rapid_ocr = _get_rapid_ocr()
+    if rapid_ocr is None:
+        return []
+
+    try:
+        img: Image.Image = Image.open(io.BytesIO(image_bytes))
+        if img.mode != "RGB":
+            img = img.convert("RGB")
+        with _ocr_lock:
+            result = _run_rapid_ocr(rapid_ocr, img)
+        if not result:
+            return []
+
+        positioned: list[tuple[str, tuple[float, float, float, float], float]] = []
+        for polygon, text, confidence in result:
+            text = str(text or "").strip()
+            confidence = float(confidence) if confidence is not None else 0.0
+            if not text or confidence < min_confidence:
+                continue
+            points = [(float(point[0]), float(point[1])) for point in polygon]
+            if not points:
+                continue
+            bbox = (
+                min(point[0] for point in points),
+                min(point[1] for point in points),
+                max(point[0] for point in points),
+                max(point[1] for point in points),
+            )
+            positioned.append(
+                (
+                    text,
+                    (
+                        bbox[0],
+                        bbox[1],
+                        bbox[2],
+                        bbox[3],
+                    ),
+                    confidence,
+                )
+            )
+        return positioned
+    except (OSError, RuntimeError, TypeError, ValueError):
+        logger.debug("Positioned OCR failed for image.", exc_info=True)
+        return []
+
+
+def _run_rapid_ocr(rapid_ocr, image):
+    """Call RapidOCR under the caller's OCR lock, handling its input forms."""
+    result, _ = rapid_ocr(image)
+    return result
